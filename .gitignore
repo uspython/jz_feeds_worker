@@ -1,2 +1,3 @@
 docker-compose.yaml
 jz_feeds_worker/worker/config/index.js
+.vscode
