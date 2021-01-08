@@ -3,15 +3,15 @@ FROM node:14
 
 WORKDIR /home/node/app
 
-COPY ./jz_feeds_worker/package*.json ./
+COPY ./package*.json ./
 
-RUN apt-get update \
-&& apt-get autoremove -yqq --purge \
-&& apt-get clean
+#RUN apt-get update \
+#&& apt-get autoremove -yqq --purge \
+#&& apt-get clean
 
-RUN npm install
+RUN npm install --verbose
 
-COPY ./jz_feeds_worker .
+COPY . /home/node/app
 
 EXPOSE 8964
 
