@@ -1,8 +1,11 @@
+const mongoose = require('mongoose');
+
 const createError = require('http-errors');
 const express = require('express');
 const path = require('path');
 const cookieParser = require('cookie-parser');
-const logger = require('morgan');
+const expressLogger = require('morgan');
+const logger = require('./worker/logger');
 
 // optional
 // const ms = require('ms');
@@ -24,7 +27,7 @@ const port = 3001;
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'pug');
 
-app.use(logger('dev'));
+app.use(expressLogger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
@@ -51,31 +54,29 @@ app.use((err, req, res, next) => {
 });
 
 app.get('/', (req, res) => {
-  res.send('Hello World!');
+  res.send('Hello World! 2');
 });
 
 app.listen(port, () => {
   console.log(`Example app listening at http://localhost:${port}`);
 });
 
-// fetch(
-//   'GET',
-//   'http://bjweather.iyuebo.com/weather.php',
-//   null,
-//   {
-//     a: 'getChartData',
-//   },
-// ).then((response) => {
-//   const { status, statusText, data } = response;
+mongoose.connect(`${process.env.MONGO_URL}`, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+  user: `${process.env.ME_CONFIG_MONGODB_ADMINUSERNAME}`,
+  pass: `${process.env.ME_CONFIG_MONGODB_ADMINPASSWORD}`,
+}, (err) => {
+  logger.error({ err });
+});
 
-//   // console.log(status, statusText, data);
-//   if (status === 200 || statusText === 'OK') {
-//     if (data.toString().length === 0) {
-//       throw new Error('Request is OK, but api is shut down now');
-//     }
-//   }
-// }).catch((e) => {
-//   console.log(e);
-// });
+const db = mongoose.connection;
+db.on('error', (err) => {
+  logger.error({ err });
+});
+db.once('open', () => {
+  // we're connected!
+  logger.info("we're connected!!");
+});
 
 module.exports = app;

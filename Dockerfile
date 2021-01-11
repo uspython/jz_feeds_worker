@@ -11,7 +11,7 @@ COPY ./package*.json ./
 
 RUN npm install --verbose
 
-COPY . /home/node/app
+COPY . ./
 
 EXPOSE 8964
 
