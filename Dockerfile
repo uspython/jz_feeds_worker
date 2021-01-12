@@ -5,9 +5,9 @@ WORKDIR /home/node/app
 
 COPY ./package*.json ./
 
-#RUN apt-get update \
-#&& apt-get autoremove -yqq --purge \
-#&& apt-get clean
+RUN apt-get update \
+#&& apt-get install -y sudo \
+ && apt-get clean
 
 RUN npm install --verbose
 
