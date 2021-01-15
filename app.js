@@ -1,11 +1,8 @@
-const mongoose = require('mongoose');
-
 const createError = require('http-errors');
 const express = require('express');
 const path = require('path');
 const cookieParser = require('cookie-parser');
 const expressLogger = require('morgan');
-const logger = require('./worker/logger');
 
 // optional
 // const ms = require('ms');
@@ -17,6 +14,8 @@ const logger = require('./worker/logger');
 // const Bree = require('bree');
 const usersRouter = require('./routes/users');
 const indexRouter = require('./routes/index');
+const dbhelperConnect = require('./worker/util/dbhelper');
+const logger = require('./worker/logger');
 
 // const fetch = require('./worker/fetch');
 
@@ -54,29 +53,13 @@ app.use((err, req, res, next) => {
 });
 
 app.get('/', (req, res) => {
-  res.send('Hello World! 2');
+  res.send('Hello World!');
 });
 
 app.listen(port, () => {
-  console.log(`Example app listening at http://localhost:${port}`);
+  logger.info(`Example app listening at http://localhost:${port}`);
 });
 
-mongoose.connect(`${process.env.MONGO_URL}`, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-  user: `${process.env.ME_CONFIG_MONGODB_ADMINUSERNAME}`,
-  pass: `${process.env.ME_CONFIG_MONGODB_ADMINPASSWORD}`,
-}, (err) => {
-  logger.error({ err });
-});
-
-const db = mongoose.connection;
-db.on('error', (err) => {
-  logger.error({ err });
-});
-db.once('open', () => {
-  // we're connected!
-  logger.info("we're connected!!");
-});
+dbhelperConnect();
 
 module.exports = app;
