@@ -1,12 +1,20 @@
-const Feed = model('Feed', FeedSchema);
+import {
+  addFeed,
+  alterFeed,
+  deleteFeed,
+  queryCityFeeds,
+} from './dbhelper';
 
-const testFeed = new Feed({
-  cityId: '11010010102',
-  region: { provinceId: '11010010101', countryId: '11010010103' },
-  releaseDate: Date.now() - 3600 * 60 * 24,
-  pollenCount: '1',
-  forcastDate: Date.now() + 3600 * 60 * 24,
-  forcastCount: '500 - 800',
+test('request beijing api, expect data is not EMPTY', async () => {
+  try {
+    const results = await queryCityFeeds({ cityId: '11010010102' });
+
+    const [{ cityId }] = results;
+
+    expect(results.length).not.toBe(0);
+    expect(cityId).toBe('11010010102');
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.log(error);
+  }
 });
-
-testFeed.save();

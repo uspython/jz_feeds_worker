@@ -14,7 +14,7 @@ const expressLogger = require('morgan');
 // const Bree = require('bree');
 const usersRouter = require('./routes/users');
 const indexRouter = require('./routes/index');
-const dbhelperConnect = require('./worker/util/dbhelper');
+const { connect } = require('./worker/util/dbhelper');
 const logger = require('./worker/logger');
 
 // const fetch = require('./worker/fetch');
@@ -60,6 +60,6 @@ app.listen(port, () => {
   logger.info(`Example app listening at http://localhost:${port}`);
 });
 
-dbhelperConnect();
+connect();
 
 module.exports = app;
