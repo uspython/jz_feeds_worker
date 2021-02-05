@@ -78,11 +78,11 @@ function deleteFeed(theFeed) {
   });
 }
 
-async function queryCityFeeds(theFeed) {
-  const { cityId, releaseDate } = theFeed;
+async function queryCityFeeds(filter) {
+  // const { cityId, releaseDate } = theFeed;
 
   try {
-    const ret = await Feed.find({ cityId, releaseDate })
+    const ret = await Feed.find({ ...filter })
       .lean()
       .sort({ releaseDate: -1 })
       .exec();

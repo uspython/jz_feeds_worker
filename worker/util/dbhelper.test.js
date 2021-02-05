@@ -1,11 +1,16 @@
 import {
+  connect,
   addFeed,
   alterFeed,
   deleteFeed,
   queryCityFeeds,
 } from './dbhelper';
 
-test('request beijing api, expect data is not EMPTY', async () => {
+test('Connect mongodb be mongoose', () => {
+  expect(() => connect()).not.toThrow(Error);
+});
+
+test('Query City Feed', async () => {
   try {
     const results = await queryCityFeeds({ cityId: '11010010102' });
 
@@ -15,6 +20,6 @@ test('request beijing api, expect data is not EMPTY', async () => {
     expect(cityId).toBe('11010010102');
   } catch (error) {
     // eslint-disable-next-line no-console
-    console.log(error);
+    expect(error).not.toMatch('error');
   }
 });
