@@ -68,14 +68,16 @@ function alterFeed(theFeed) {
 
 function deleteFeed(theFeed) {
   const { cityId, releaseDate } = theFeed;
-  Feed.deleteOne({ cityId, releaseDate }, (err) => {
+  const d = Feed.deleteOne({ cityId, releaseDate }, (err) => {
     if (err) {
       logger.warn(err);
-      return;
+      return null;
     }
 
     logger.info(`Feed Deleted, ${theFeed}`);
   });
+
+  return d;
 }
 
 async function queryCityFeeds(filter) {
