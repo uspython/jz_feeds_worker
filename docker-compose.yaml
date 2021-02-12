@@ -1,15 +1,47 @@
 version: "3.7"
 
 services:
+  miniflux:
+    image: miniflux/miniflux:latest
+    container_name: miniflux
+    ports:
+      - "8082:8080"
+    networks:
+      extnetwork:
+        ipv4_address: 172.24.0.6
+    depends_on:
+      - db
+    environment:
+      - DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db/${POSTGRES_DATABASE}?sslmode=disable
+      - ADMIN_USERNAME=${ADMIN_USERNAME}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
+      - RUN_MIGRATIONS=1
+      - CREATE_ADMIN=1
+      - LOG_DATE_TIME=yes
+      - POLLING_FREQUENCY=30
+      - BATCH_SIZE=20
+      - WORKER_POOL_SIZE=10
+  db:
+    image: postgres:latest
+    container_name: postgres
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DATABASE=${POSTGRES_DATABASE}
+    networks:
+      extnetwork:
+        ipv4_address: 172.24.0.7
+    volumes:
+      - miniflux-db:/var/lib/postgresql/data
   mongo:
     container_name: mongo
     image: mongo:4.4.2-bionic
     environment:
-      - MONGO_INITDB_ROOT_USERNAME=jeff001
-      - MONGO_INITDB_ROOT_PASSWORD=mOn90Db001
       - MONGO_INITDB_DATABASE=app
-      - MONGO_INITDB_USERNAME=exp001
-      - MONGO_INITDB_PASSWORD=mOn90DbExp001
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_INITDB_ROOT_USERNAME}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD}
+      - MONGO_INITDB_USERNAME=${MONGO_INITDB_USERNAME}
+      - MONGO_INITDB_PASSWORD=${MONGO_INITDB_PASSWORD}
     volumes:
       - mongodbdata:/data/db
       - ./init_mongo.sh:/docker-entrypoint-initdb.d/init_mongo.sh:ro
@@ -26,11 +58,11 @@ services:
       - ME_CONFIG_MONGODB_SERVER=mongo
       - ME_CONFIG_MONGODB_PORT=27017
       - ME_CONFIG_MONGODB_ENABLE_ADMIN=true
-      - ME_CONFIG_MONGODB_AUTH_DATABASE=admin
-      - ME_CONFIG_MONGODB_ADMINUSERNAME=jeff001
-      - ME_CONFIG_MONGODB_ADMINPASSWORD=mOn90Db001
-      - ME_CONFIG_BASICAUTH_USERNAME=jeffexp001
-      - ME_CONFIG_BASICAUTH_PASSWORD=mOn90DbExp001
+      - ME_CONFIG_MONGODB_AUTH_DATABASE=${ME_CONFIG_MONGODB_AUTH_DATABASE}
+      - ME_CONFIG_MONGODB_ADMINUSERNAME=${MONGO_INITDB_ROOT_USERNAME}
+      - ME_CONFIG_MONGODB_ADMINPASSWORD=${MONGO_INITDB_ROOT_PASSWORD}
+      - ME_CONFIG_BASICAUTH_USERNAME=${ME_CONFIG_BASICAUTH_USERNAME}
+      - ME_CONFIG_BASICAUTH_PASSWORD=${ME_CONFIG_BASICAUTH_PASSWORD}
     links:
       - mongo
     ports:
@@ -48,9 +80,9 @@ services:
       dockerfile: Dockerfile
     environment:
       - NODE_ENV=development
-      - ME_CONFIG_MONGODB_ADMINUSERNAME=exp001
-      - ME_CONFIG_MONGODB_ADMINPASSWORD=mOn90DbExp001
       - MONGO_URL=mongodb://mongo:27017/app
+      - ME_CONFIG_MONGODB_ADMINUSERNAME=${ME_CONFIG_MONGODB_ADMINUSERNAME}
+      - ME_CONFIG_MONGODB_ADMINPASSWORD=${ME_CONFIG_MONGODB_ADMINPASSWORD}
     links:
       - mongo
     ulimits:
@@ -71,4 +103,5 @@ networks:
         - subnet: 172.24.0.0/16
 
 volumes:
+  miniflux-db:
   mongodbdata:
