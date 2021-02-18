@@ -1,7 +1,7 @@
 /* eslint-disable quote-props */
 /* eslint-disable camelcase */
 /* eslint-disable prefer-const */
-let city = {
+let cityMap = {
   '110000000000': [
     {
       'province': '北京市',
@@ -1780,4 +1780,4 @@ let city = {
     },
   ],
 };
-export { city };
+export { cityMap };

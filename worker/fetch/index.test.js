@@ -4,7 +4,7 @@ import fetch from '.';
 async function fetchData(callback) {
   const response = await fetch(
     'GET',
-    config.url,
+    'https://baidu.com',
     null,
     {
       ...config.params,

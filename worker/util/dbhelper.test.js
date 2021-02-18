@@ -17,9 +17,9 @@ const testFeed = {
     provinceId: '11010010101',
     countryId: '11010010103',
   },
-  releaseDate: dayjs().startOf('day').millisecond(),
+  releaseDate: dayjs('2020-11-11').startOf('day').valueOf(),
   pollenCount: '1',
-  forcastDate: dayjs().add(1, 'day').startOf('day').millisecond(),
+  forcastDate: dayjs('2020-11-11').add(1, 'day').startOf('day').valueOf(),
   forcastCount: '500 - 800',
 };
 
@@ -29,14 +29,14 @@ test('Insert Feed', () => {
 
 test('Alter Feed by Add New One', async (done) => {
   const newFeed = {
-    cityId: '11010010104',
+    cityId: '445200000000',
     region: {
       provinceId: '11010010101',
       countryId: '11010010103',
     },
-    releaseDate: dayjs().startOf('day').millisecond(),
+    releaseDate: dayjs('2020-11-11').startOf('day').valueOf(),
     pollenCount: '4',
-    forcastDate: dayjs().add(1, 'day').startOf('day').millisecond(),
+    forcastDate: dayjs('2020-11-11').add(1, 'day').startOf('day').valueOf(),
     forcastCount: '500 - 800',
   };
 
@@ -51,9 +51,9 @@ test('Alter Feed by Add New One', async (done) => {
       }] = results;
 
       expect(results.length).not.toBe(0);
-      expect(cityId).toBe('11010010104');
-      expect(releaseDate.valueOf()).toBe(dayjs().startOf('day').millisecond());
-      expect(forcastDate.valueOf()).toBe(dayjs().add(1, 'day').startOf('day').millisecond());
+      expect(cityId).toBe('445200000000');
+      expect(releaseDate.valueOf()).toBe(dayjs('2020-11-11').startOf('day').valueOf());
+      expect(forcastDate.valueOf()).toBe(dayjs('2020-11-11').add(1, 'day').startOf('day').valueOf());
       expect(pollenCount).toBe('4');
 
       done();
@@ -65,12 +65,12 @@ test('Alter Feed by Add New One', async (done) => {
 
 test('Query City Feed', async (done) => {
   try {
-    const results = await queryCityFeeds({ cityId: '11010010104' });
+    const results = await queryCityFeeds({ cityId: '445200000000' });
 
     const [{ cityId }] = results;
 
     expect(results.length).not.toBe(0);
-    expect(cityId).toBe('11010010104');
+    expect(cityId).toBe('445200000000');
     done();
   } catch (error) {
     // eslint-disable-next-line no-console
@@ -79,42 +79,50 @@ test('Query City Feed', async (done) => {
   }
 });
 
-// test('Delete Feed', () => {
-//   expect(() => {
-//     const r = deleteFeed(testFeed);
-//     expect(r).not.toBeNull();
-//   }).not.toThrow(Error);
-// });
+test('Delete Feed', () => {
+  expect(() => {
+    const r = deleteFeed(testFeed);
+    expect(r).not.toBeNull();
+  }).not.toThrow(Error);
+});
 
 test('Alter Feed by Add New One', async (done) => {
   const theFeed = {
-    cityId: '11010010104',
+    cityId: '445200000000',
     region: {
       provinceId: '11010010101',
       countryId: '11010010103',
     },
-    releaseDate: dayjs().startOf('day').millisecond(),
+    releaseDate: dayjs('2020-11-11').startOf('day').valueOf(),
     pollenCount: '5',
-    forcastDate: dayjs().add(1, 'day').startOf('day').millisecond(),
+    forcastDate: dayjs('2020-11-11').add(1, 'day').startOf('day').valueOf(),
     forcastCount: '500 - 800',
   };
 
   expect(() => alterFeed(theFeed)).not.toThrow(Error);
 
   try {
-    const results = await queryCityFeeds(theFeed);
+    setTimeout(async () => {
+      const results = await queryCityFeeds({
+        cityId: '445200000000',
+        region: {
+          provinceId: '11010010101',
+          countryId: '11010010103',
+        },
+      });
 
-    expect(results.length).not.toBe(0);
+      expect(results.length).not.toBe(0);
 
-    const [{
-      cityId, releaseDate, forcastDate, pollenCount,
-    }] = results;
-    expect(cityId).toBe('11010010104');
-    expect(releaseDate.valueOf()).toBe(dayjs().startOf('day').millisecond());
-    expect(forcastDate.valueOf()).toBe(dayjs().add(1, 'day').startOf('day').millisecond());
-    expect(pollenCount).toBe('5');
+      const [{
+        cityId, releaseDate, forcastDate, pollenCount,
+      }] = results;
+      expect(cityId).toBe('445200000000');
+      expect(releaseDate.valueOf()).toBe(dayjs('2020-11-11').startOf('day').valueOf());
+      expect(forcastDate.valueOf()).toBe(dayjs('2020-11-11').add(1, 'day').startOf('day').valueOf());
+      expect(pollenCount).toBe('5');
 
-    done();
+      done();
+    }, 200);
   } catch (error) {
     done(error);
   }
