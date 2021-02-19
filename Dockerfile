@@ -5,10 +5,6 @@ WORKDIR /home/node/app
 
 COPY ./package*.json ./
 
-RUN apt-get update \
-#&& apt-get install -y sudo \
- && apt-get clean
-
 RUN npm install --verbose
 
 COPY . ./
