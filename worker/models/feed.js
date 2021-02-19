@@ -18,4 +18,5 @@ const FeedSchema = new Schema({
 FeedSchema.plugin(timestamps);
 const Feed = model('Feed', FeedSchema);
 
+module.exports.FeedSchema = FeedSchema;
 module.exports = Feed;

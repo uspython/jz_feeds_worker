@@ -3,71 +3,18 @@ const customParseFormat = require('dayjs/plugin/customParseFormat');
 const config = require('./config');
 const fetch = require('./fetch');
 const logger = require('./logger');
-const { connect, addFeed, queryCityFeeds } = require('./util/dbhelper');
+const { connect, addOneFeed, queryCityFeeds } = require('./util/dbhelper');
 const { cityMap } = require('./assets/city');
 const Feed = require('./models/feed');
+const { 
+  cityFrom, 
+  cityEnNameFrom,
+  callbackFromWeather,
+  callWithRetry
+} = require('./util/worker_helper');
 
 dayjs.extend(customParseFormat);
-
 const DateFormatString = 'YYYY-MM-DD';
-const wait = (ms) => new Promise((res) => setTimeout(res, ms));
-
-const callWithRetry = async (fn, depth = 0) => {
-  try {
-    return await fn();
-  } catch (e) {
-    if (depth > 7) {
-      throw e;
-    }
-    await wait(2 ** depth * 10);
-
-    // eslint-disable-next-line no-unused-vars
-    return callWithRetry(fn, depth + 1);
-  }
-};
-
-// function fetchFromWeather(params) {
-//   // const url = `${config.weatherUrl}`;
-//   const { from = '', to = '', city = '' } = params;
-
-//   const weatherParams = {
-//     eletype: 1,
-//     city,
-//     start: from,
-//     end: to,
-//   };
-
-//   console.log(JSON.stringify(weatherParams));
-//   // const apiPromise = fetch(
-//   //   'GET',
-//   //   url,
-//   //   null,
-//   //   weatherParams,
-//   // );
-// }
-
-function cityFrom(cnName) {
-  const citys = Object.values(cityMap)
-    .reduce((p, c) => p.concat(c), [])
-    .filter((c) => c.province.indexOf(cnName) > -1 || c.name.indexOf(cnName) > -1);
-
-  if (citys.length !== 0) {
-    return citys[0];
-  }
-
-  return null;
-}
-
-function cityEnNameFrom(cnName) {
-  const ret = config.citys.find(({ cn }) => cnName.indexOf(cn) > -1);
-
-  if (!ret) {
-    return '';
-  }
-
-  const { en } = ret;
-  return en;
-}
 
 class JZFeedWorker {
   constructor(aCity) {
@@ -136,7 +83,7 @@ class JZFeedWorker {
     return { from, to };
   }
 
-  async fetchFromWeather(params) {
+  async fetchRawDataFromWeather(params) {
     // const url = `${config.weatherUrl}`;
     const { from = '', to = '' } = params;
 
@@ -156,11 +103,9 @@ class JZFeedWorker {
       );
 
       if (status === 200 || statusText === 'OK') {
-        // eslint-disable-next-line no-eval
-        const ret = eval(data);
-        console.log(`ret: ${ret}`);
-
-        return 1;
+        // callback({"dataList":[{"elenum":1,"week":"星期日","addTime":"2020-03-01","city":"","level":"","cityCode":"beijing","num":"","eletype":"花粉","content":""}]})
+        const { dataList } = callbackFromWeather(data);
+        return datalist || [];
       }
     } catch (error) {
       if (error.response) {
@@ -180,13 +125,52 @@ class JZFeedWorker {
       }
       console.log(error.config);
 
-      return 0;
+      return [];
     }
-    return 0;
+    return [];
   }
+
+  feedsFromWeatherRaw(data) {
+    const rawData = [...data];
+  
+    if(data.length === 0) {
+      throw new Error("Weather Raw-Data Is Empty");
+    }
+  
+    /**
+     * [{
+     * "elenum":1,"week":"星期日",
+     * "addTime":"2020-03-01",
+     * "city":"",
+     * "level":"",
+     * "cityCode":"beijing",
+     * "num":"",
+     * "eletype":"花粉",
+     * "content":""
+     * }]
+     */
+  
+    const feeds = rawData.map(d => {
+      const { addTime, num }  = d;
+      const addDate = dayjs(addTime);
+      const feed = {
+        cityId: this.city.id,
+        region: {
+          provinceId: provinceFrom(this.city).id,
+          countryId: this.city.id,
+        },
+        releaseDate: addDate.startOf('day').valueOf(),
+        pollenCount: `${num}`,
+        forcastDate: addDate.add(1, 'day').startOf('day').valueOf(),
+        forcastCount: '',
+      }
+  
+      return feed;
+    });
+
+    return feeds;
+  }
+
 }
 
-module.exports.cityFrom = cityFrom;
-module.exports.cityEnNameFrom = cityEnNameFrom;
-module.exports.callbackFromWeather = callbackFromWeather;
-module.exports.JZFeedWorker = JZFeedWorker;
+module.exports = JZFeedWorker;

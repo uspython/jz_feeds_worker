@@ -1,6 +1,9 @@
 const mongoose = require('mongoose');
 const logger = require('../logger');
-const Feed = require('../models/feed');
+
+const Feed = process.env.NODE_ENV === 'development' 
+? require('../models/mock_feed')
+:require('../models/feed');
 
 function connect() {
   mongoose.connect(`${process.env.MONGO_URL}`, {
@@ -21,7 +24,7 @@ function connect() {
   });
 }
 
-function addFeed(theFeed) {
+function addOneFeed(theFeed) {
   Feed.create(theFeed, (err) => {
     if (err) {
       logger.warn(err);
@@ -30,6 +33,16 @@ function addFeed(theFeed) {
 
     logger.info(`New Feed Created, ${theFeed}`);
   });
+}
+
+async function addManyFeed(feeds) {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
+  await Feed.insertMany(feeds, { session });
+
+  await session.commitTransaction();
+  session.endSession();
 }
 
 function alterFeed(theFeed) {
@@ -82,7 +95,8 @@ async function queryCityFeeds(filter) {
 }
 
 module.exports.connect = connect;
-module.exports.addFeed = addFeed;
+module.exports.addOneFeed = addOneFeed;
+module.exports.addManyFeed = addManyFeed;
 module.exports.alterFeed = alterFeed;
 module.exports.deleteFeed = deleteFeed;
 module.exports.queryCityFeeds = queryCityFeeds;

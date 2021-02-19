@@ -128,4 +128,4 @@ const provinceObject = {
   },
 };
 
-export default provinceObject;
+export { provinceObject };

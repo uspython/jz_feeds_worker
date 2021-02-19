@@ -1,16 +1,22 @@
 const dayjs = require('dayjs');
 const {
   connect,
-  addFeed,
+  addOneFeed,
   queryCityFeeds,
 } = require('./util/dbhelper');
+const { 
+  cityFrom, 
+  cityEnNameFrom,
+  callbackFromWeather,
+  callWithRetry,
+  provinceFrom,
+  cityCnNameFrom,
+} = require('./util/worker_helper');
+
 
 const config = require('./config');
 const fetch = require('./fetch');
-
-const {
-  cityEnNameFrom, cityFrom, callbackFromWeather, JZFeedWorker,
-} = require('./index');
+const JZFeedWorker = require('./index');
 
 describe('Test City Utility', () => {
   test('should return beijing', () => {
@@ -36,12 +42,28 @@ describe('Test City Utility', () => {
     expect(testCity.name).toBe('淄博市');
   });
 
-  test("should reture city's english name", () => {
+  test("should return city's english name", () => {
     const enName = cityEnNameFrom('乌鲁木齐');
 
     expect(enName.length).not.toBe(0);
     expect(enName).toBe('wulumuqi');
   });
+
+  test("should return city's chinese name", () => {
+    const name = cityCnNameFrom('wulumuqi');
+
+    expect(name.length).not.toBe(0);
+    expect(name).toBe('乌鲁木齐');
+  });
+
+  test('should return a provice', () => {
+    const testCity = cityFrom('沈阳');
+    const p = provinceFrom(testCity);
+
+    expect(p.name).toBe('辽宁省');
+    expect(p.id).toBe('210000000000');
+  });
+  
 });
 
 describe('Test JZFeedWorker', () => {
@@ -70,12 +92,57 @@ describe('Test JZFeedWorker', () => {
     expect(nextDay).toBe('2020-11-12');
   });
 
-  test('fetch weather api should reture 1', async () => {
+  test('fetch weather api should return raw data', async () => {
     const testCity = cityFrom('北京');
     const w = new JZFeedWorker(testCity);
     const nextDay = await w.getNextDay();
-    const fetchStatus = await w.fetchFromWeather({ from: nextDay, to: nextDay });
+    const rawData = await w.fetchRawDataFromWeather({ 
+      from: nextDay, to: nextDay 
+    });
 
-    expect(fetchStatus).not.toBe(0);
+    expect(rawData.length).not.toBe(0);
   });
+
+  test('should get feeds from weather raw data', () => {
+    const mockData = [{
+      "elenum":1,
+      "week":"星期三",
+      "addTime":"2020-03-11",
+      "city":"北京",
+      "level":"偏高",
+      "cityCode":"beijing",
+      "num":202.00,
+      "eletype":"花粉",
+      "content":"敏感人群减少外出，外出需防护。"
+    }];
+
+    const testCity = cityFrom('北京');
+    const w = new JZFeedWorker(testCity);
+    const feeds = w.feedsFromWeatherRaw(mockData);
+
+    expect(feeds.length).not.toBe(0);
+    
+    const [{cityId, pollenCount, releaseDate, region}] = feeds;
+    expect(cityId).toBe(testCity.id);
+    expect(releaseDate).toBe(dayjs('2020-03-11').startOf('day').valueOf());
+    expect(region.provinceId).toBe(provinceFrom(testCity).id);
+    expect(pollenCount).toBe('202');
+
+    const mockData2 = [{
+      "elenum":1,
+      "week":"星期三",
+      "addTime":"2020-03-11",
+      "city":"北京",
+      "level":"偏高",
+      "cityCode":"beijing",
+      "num": '',
+      "eletype":"花粉",
+      "content":"敏感人群减少外出，外出需防护。"
+    }];
+
+    const afeeds = w.feedsFromWeatherRaw(mockData);
+    expect(afeeds.pollenCount).toBe('202');
+
+  })
+  
 });

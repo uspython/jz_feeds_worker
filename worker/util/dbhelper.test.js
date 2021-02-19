@@ -1,7 +1,8 @@
 import dayjs from 'dayjs';
 import {
   connect,
-  addFeed,
+  addOneFeed,
+  addManyFeed,
   alterFeed,
   deleteFeed,
   queryCityFeeds,
@@ -24,8 +25,18 @@ const testFeed = {
 };
 
 test('Insert Feed', () => {
-  expect(() => addFeed(testFeed)).not.toThrow(Error);
+  expect(() => addOneFeed(testFeed)).not.toThrow(Error);
 });
+
+test('should insert many feeds without error', async (done) => {
+    const feeds = [testFeed, testFeed, testFeed];
+    expect(async () => await addManyFeed(feeds)).not.toThrow(Error);
+
+    const c = await Feed.countDocuments();
+    expect(c).toBeGreaterThanOrEqual(4);
+    done();
+})
+
 
 test('Alter Feed by Add New One', async (done) => {
   const newFeed = {
