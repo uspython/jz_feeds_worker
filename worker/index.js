@@ -58,6 +58,17 @@ function cityFrom(cnName) {
   return null;
 }
 
+function cityEnNameFrom(cnName) {
+  const ret = config.citys.find(({ cn }) => cnName.indexOf(cn) > -1);
+
+  if (!ret) {
+    return '';
+  }
+
+  const { en } = ret;
+  return en;
+}
+
 class JZFeedWorker {
   constructor(aCity) {
     this.city = aCity;
@@ -89,7 +100,7 @@ class JZFeedWorker {
       }
     }
 
-    return { nextDay };
+    return nextDay;
   }
 
   async getMonthRange() {
@@ -124,7 +135,58 @@ class JZFeedWorker {
 
     return { from, to };
   }
+
+  async fetchFromWeather(params) {
+    // const url = `${config.weatherUrl}`;
+    const { from = '', to = '' } = params;
+
+    const weatherParams = {
+      eletype: 1,
+      city: cityEnNameFrom(this.city.name),
+      start: from,
+      end: to,
+    };
+
+    try {
+      const { status, statusText, data } = await fetch(
+        'GET',
+        config.weatherUrl,
+        null,
+        weatherParams,
+      );
+
+      if (status === 200 || statusText === 'OK') {
+        // eslint-disable-next-line no-eval
+        const ret = eval(data);
+        console.log(`ret: ${ret}`);
+
+        return 1;
+      }
+    } catch (error) {
+      if (error.response) {
+        // The request was made and the server responded with a status code
+        // that falls out of the range of 2xx
+        console.log(error.response.data);
+        console.log(error.response.status);
+        console.log(error.response.headers);
+      } else if (error.request) {
+        // The request was made but no response was received
+        // `error.request` is an instance of XMLHttpRequest in the browser and an instance of
+        // http.ClientRequest in node.js
+        console.log(error.request);
+      } else {
+        // Something happened in setting up the request that triggered an Error
+        console.log('Error', error.message);
+      }
+      console.log(error.config);
+
+      return 0;
+    }
+    return 0;
+  }
 }
 
 module.exports.cityFrom = cityFrom;
+module.exports.cityEnNameFrom = cityEnNameFrom;
+module.exports.callbackFromWeather = callbackFromWeather;
 module.exports.JZFeedWorker = JZFeedWorker;
