@@ -1,9 +1,10 @@
 const dayjs = require('dayjs');
 const customParseFormat = require('dayjs/plugin/customParseFormat');
+const isSameOrAfter = require('dayjs/plugin/isSameOrAfter');
 const config = require('./config');
 const fetch = require('./fetch');
 const logger = require('./logger');
-const { connect, addOneFeed, queryCityFeeds } = require('./util/dbhelper');
+const { addManyFeeds } = require('./util/dbhelper');
 const Feed = process.env.NODE_ENV === 'development'
   ? require('./models/mock_feed')
   : require('./models/feed');
@@ -18,11 +19,16 @@ dayjs.extend(customParseFormat);
 const DateFormatString = 'YYYY-MM-DD';
 
 class JZFeedWorker {
-  constructor(aCity) {
+  /**
+   * @param {aCity} city Object
+   * @param {scheduleType} scheduleType 'day' | 'month'
+   */
+  constructor(aCity, scheduleType) {
     this.city = aCity;
+    this.scheduleType = scheduleType || 'day';
   }
 
-  async getNextDay() {
+  async getNextDayRange() {
     const { id } = this.city;
     const cityId = id;
 
@@ -48,7 +54,7 @@ class JZFeedWorker {
       }
     }
 
-    return nextDay;
+    return { from: nextDay, to: nextDay };
   }
 
   async getMonthRange() {
@@ -77,7 +83,9 @@ class JZFeedWorker {
       if (releaseDate) {
         const d = dayjs(releaseDate).add(1, 'day');
         from = d.format(DateFormatString);
-        to = d.endOf('month').format(DateFormatString);
+        to = d.endOf('month').isAfter(dayjs().startOf('day')) 
+          ? dayjs().startOf('day').format(DateFormatString) 
+          : from;
       }
     }
 
@@ -152,25 +160,56 @@ class JZFeedWorker {
      * }]
      */
 
-    const feeds = rawData.map((d) => {
-      const { addTime, num } = d;
-      const addDate = dayjs(addTime);
-      const feed = {
-        cityId: this.city.id,
-        region: {
-          provinceId: provinceFrom(this.city).id,
-          countryId: this.city.id,
-        },
-        releaseDate: addDate.startOf('day').valueOf(),
-        pollenCount: `${num}`,
-        forcastDate: addDate.add(1, 'day').startOf('day').valueOf(),
-        forcastCount: '',
-      };
+    const feeds = rawData
+      .filter(({ num }) => (`${num}`.trim().length > 0))
+      .map((d) => {
+        const { addTime, num } = d;
+        const addDate = dayjs(addTime);
+        const feed = {
+          cityId: this.city.id,
+          region: {
+            provinceId: provinceFrom(this.city).id,
+            countryId: this.city.id,
+          },
+          releaseDate: addDate.startOf('day').valueOf(),
+          pollenCount: `${num}`,
+          forcastDate: addDate.add(1, 'day').startOf('day').valueOf(),
+          forcastCount: '',
+        };
 
       return feed;
     });
 
     return feeds;
+  }
+
+  async invoke() {
+    const dateRangePromise = this.scheduleType === 'month' 
+                                ? this.getMonthRange() 
+                                : this.getNextDayRange();
+    const dateRange = await dateRangePromise;
+    // Guard Tomorrow
+    const tomorrow = dayjs().add(1, 'day').startOf('day');
+    if (dayjs(dateRange.to, DateFormatString).isSameOrAfter(tomorrow)) {
+      return;
+    }
+
+    const 
+      rawData = await this.fetchRawDataFromWeather(dateRange),
+      feeds = this.feedsFromWeatherRaw(rawData);
+
+    // Guard feeds length
+    if (feeds.length <= 0) {
+      return;
+    }
+    
+    await addManyFeeds(feeds);
+    logger.info(`\
+[Worker]: Worker invoked, \
+city: ${this.city.name} \
+type: ${this.scheduleType} \
+count: ${feeds.length}`);
+
   }
 }
 

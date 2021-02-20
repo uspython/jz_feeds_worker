@@ -35,25 +35,21 @@ function addOneFeed(theFeed) {
   });
 }
 
-async function addManyFeed(feeds) {
+async function addManyFeeds(feeds) {
   await Feed.insertMany(feeds);
 }
 
-function alterFeed(theFeed) {
+async function alterFeed(theFeed) {
   const { cityId, releaseDate } = theFeed;
-  Feed.updateOne({ cityId, releaseDate }, { ...theFeed },
-    // [options.upsert=false] «Boolean» if true, and no documents found, insert a new document
-    { upsert: true },
-    (err, res) => {
-      if (err) {
-        logger.warn(err);
-        return 0;
-      }
+  const { nModified = 0 } = await Feed.updateOne(
+      { cityId, releaseDate }, 
+      { ...theFeed },
+      // [options.upsert=false] «Boolean» if true, and no documents found, insert a new document
+      { upsert: true }
+    );
 
-      logger.info(`Feed Altered, ${cityId}, ${releaseDate}, ${res.nModified} modified`);
-
-      return res.nModified;
-    });
+  logger.info(`Feed Altered, ${cityId}, ${releaseDate}, ${nModified} modified`);
+  return nModified;
 }
 
 function deleteFeed(theFeed) {
@@ -90,7 +86,7 @@ async function queryCityFeeds(filter) {
 
 module.exports.connect = connect;
 module.exports.addOneFeed = addOneFeed;
-module.exports.addManyFeed = addManyFeed;
+module.exports.addManyFeeds = addManyFeeds;
 module.exports.alterFeed = alterFeed;
 module.exports.deleteFeed = deleteFeed;
 module.exports.queryCityFeeds = queryCityFeeds;

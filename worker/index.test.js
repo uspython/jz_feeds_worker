@@ -1,7 +1,7 @@
 const dayjs = require('dayjs');
 const {
   connect,
-  addOneFeed,
+  alterFeed,
   queryCityFeeds,
 } = require('./util/dbhelper');
 const {
@@ -83,17 +83,41 @@ describe('Test JZFeedWorker', () => {
     expect(to).toBe('2020-11-30');
   });
 
+  test('month range should before (NOW + 1Day)', async () => {
+    const testCity = cityFrom('三门峡');
+    const today = dayjs().startOf('day');
+
+    const newFeed = {
+      cityId: testCity.id,
+      region: {
+        provinceId: '11010010101',
+        countryId: '11010010103',
+      },
+      releaseDate: today.valueOf(),
+      pollenCount: '400',
+      forcastDate: today.add(1, 'day').valueOf(),
+      forcastCount: '500 - 800',
+    };
+  
+    await alterFeed(newFeed)
+
+    const w = new JZFeedWorker(testCity);
+    const { from, to } = await w.getMonthRange();
+    expect(from).toBe(today.add(1, 'day').format('YYYY-MM-DD'));
+    expect(to).toBe(today.add(1, 'day').format('YYYY-MM-DD'));
+  });
+
   test('should get test date: 2020-11-12', async () => {
     const jieyang = cityFrom('揭阳');
     const w = new JZFeedWorker(jieyang);
-    const nextDay = await w.getNextDay();
+    const nextDay = await w.getNextDayRange();
     expect(nextDay).toBe('2020-11-12');
   });
 
   test('fetch weather api should return raw data', async () => {
     const testCity = cityFrom('北京');
     const w = new JZFeedWorker(testCity);
-    const nextDay = await w.getNextDay();
+    const nextDay = await w.getNextDayRange();
     const rawData = await w.fetchRawDataFromWeather({
       from: nextDay, to: nextDay,
     });
@@ -139,4 +163,16 @@ describe('Test JZFeedWorker', () => {
     const { dataList } = r;
     expect(dataList.length).not.toBe(0);
   });
+
+  test('invoke should add feeds to databse by day', () => {
+    const testCity = cityFrom('西安');
+    const w = new JZFeedWorker(testCity, 'day');
+
+    expect(async () => {
+      await w.invoke();
+      const r = await queryCityFeeds({ cityId: testCity.id });
+      expect(r.length).not.toBe(0);
+    }).not.toThrowError();
+  })
+  
 });

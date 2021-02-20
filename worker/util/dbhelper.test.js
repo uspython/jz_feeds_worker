@@ -2,7 +2,7 @@ import dayjs from 'dayjs';
 import {
   connect,
   addOneFeed,
-  addManyFeed,
+  addManyFeeds,
   alterFeed,
   deleteFeed,
   queryCityFeeds,
@@ -36,7 +36,7 @@ test('should insert many feeds without error', async (done) => {
   const feeds = [testFeed, testFeed, testFeed];
   // eslint-disable-next-line no-return-await
   expect(async () => {
-    await addManyFeed(feeds);
+    await addManyFeeds(feeds);
 
     const c = await Feed.countDocuments();
     expect(c).toBeGreaterThanOrEqual(4);
@@ -58,9 +58,9 @@ test('Alter Feed by Add New One', async (done) => {
     forcastCount: '500 - 800',
   };
 
-  expect(() => alterFeed(newFeed)).not.toThrow(Error);
+  expect(async () => {
+    await alterFeed(newFeed);
 
-  setTimeout(async () => {
     try {
       const results = await queryCityFeeds(newFeed);
 
@@ -78,7 +78,8 @@ test('Alter Feed by Add New One', async (done) => {
     } catch (error) {
       done(error);
     }
-  }, 1000);
+
+  }).not.toThrow(Error);
 });
 
 test('Query City Feed', async (done) => {
