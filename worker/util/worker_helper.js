@@ -1,5 +1,7 @@
 const { cityMap } = require('../assets/city');
-const { provinceObject } = require('../assets/province_object')
+const { provinceObject } = require('../assets/province_object');
+const config = require('../config');
+const logger = require('../logger');
 
 const wait = (ms) => new Promise((res) => setTimeout(res, ms));
 
@@ -33,9 +35,9 @@ export function provinceFrom(city) {
   const { province } = city;
 
   const p = Object.values(provinceObject)
-    .find(({name, id}) => name.indexOf(province) > -1);
-  
-  if(!p) return null;
+    .find(({ name }) => name.indexOf(province) > -1);
+
+  if (!p) return null;
 
   return p;
 }
@@ -62,10 +64,30 @@ function cityEnNameFrom(cnName) {
   return en;
 }
 
+// For weather api only
+// eslint-disable-next-line max-len
+// resp:callback({"dataList":[{"elenum":1,"week":"星期日","addTime":"2020-03-01","city":"","level":"","cityCode":"","num":"","eletype":"花粉","content":""}]})
 function callbackFromWeather(resp) {
-  return "";
-}
+  let jsonStr = '';
+  const regex = /(?<=callback\()(.*)(?=\))/m;
+  const m = regex.exec(resp);
 
+  if (m !== null) {
+    [jsonStr] = m;
+  } else {
+    logger.info(resp);
+    throw new Error('Can not parse weather resp to JSON, match failure');
+  }
+
+  try {
+    const ret = JSON.parse(jsonStr);
+    return ret;
+  } catch (error) {
+    logger.info(error);
+  }
+
+  return null;
+}
 
 module.exports.cityFrom = cityFrom;
 module.exports.cityEnNameFrom = cityEnNameFrom;

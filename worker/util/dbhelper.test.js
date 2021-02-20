@@ -8,6 +8,10 @@ import {
   queryCityFeeds,
 } from './dbhelper';
 
+const Feed = process.env.NODE_ENV === 'development'
+  ? require('../models/mock_feed')
+  : require('../models/feed');
+
 test('Connect mongodb be mongoose', () => {
   expect(() => connect()).not.toThrow(Error);
 });
@@ -29,14 +33,17 @@ test('Insert Feed', () => {
 });
 
 test('should insert many feeds without error', async (done) => {
-    const feeds = [testFeed, testFeed, testFeed];
-    expect(async () => await addManyFeed(feeds)).not.toThrow(Error);
+  const feeds = [testFeed, testFeed, testFeed];
+  // eslint-disable-next-line no-return-await
+  expect(async () => {
+    await addManyFeed(feeds);
 
     const c = await Feed.countDocuments();
     expect(c).toBeGreaterThanOrEqual(4);
-    done();
-})
+  }).not.toThrow(Error);
 
+  done();
+});
 
 test('Alter Feed by Add New One', async (done) => {
   const newFeed = {
@@ -91,9 +98,11 @@ test('Query City Feed', async (done) => {
 });
 
 test('Delete Feed', () => {
-  expect(() => {
+  expect(async () => {
     const r = deleteFeed(testFeed);
     expect(r).not.toBeNull();
+
+    await Feed.deleteMany(testFeed);
   }).not.toThrow(Error);
 });
 

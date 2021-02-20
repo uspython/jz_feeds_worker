@@ -4,13 +4,14 @@ const config = require('./config');
 const fetch = require('./fetch');
 const logger = require('./logger');
 const { connect, addOneFeed, queryCityFeeds } = require('./util/dbhelper');
-const { cityMap } = require('./assets/city');
-const Feed = require('./models/feed');
-const { 
-  cityFrom, 
+const Feed = process.env.NODE_ENV === 'development'
+  ? require('./models/mock_feed')
+  : require('./models/feed');
+const {
   cityEnNameFrom,
   callbackFromWeather,
-  callWithRetry
+  callWithRetry,
+  provinceFrom,
 } = require('./util/worker_helper');
 
 dayjs.extend(customParseFormat);
@@ -103,9 +104,10 @@ class JZFeedWorker {
       );
 
       if (status === 200 || statusText === 'OK') {
+        // eslint-disable-next-line max-len
         // callback({"dataList":[{"elenum":1,"week":"星期日","addTime":"2020-03-01","city":"","level":"","cityCode":"beijing","num":"","eletype":"花粉","content":""}]})
         const { dataList } = callbackFromWeather(data);
-        return datalist || [];
+        return dataList || [];
       }
     } catch (error) {
       if (error.response) {
@@ -132,11 +134,11 @@ class JZFeedWorker {
 
   feedsFromWeatherRaw(data) {
     const rawData = [...data];
-  
-    if(data.length === 0) {
-      throw new Error("Weather Raw-Data Is Empty");
+
+    if (data.length === 0) {
+      throw new Error('Weather Raw-Data Is Empty');
     }
-  
+
     /**
      * [{
      * "elenum":1,"week":"星期日",
@@ -149,9 +151,9 @@ class JZFeedWorker {
      * "content":""
      * }]
      */
-  
-    const feeds = rawData.map(d => {
-      const { addTime, num }  = d;
+
+    const feeds = rawData.map((d) => {
+      const { addTime, num } = d;
       const addDate = dayjs(addTime);
       const feed = {
         cityId: this.city.id,
@@ -163,14 +165,13 @@ class JZFeedWorker {
         pollenCount: `${num}`,
         forcastDate: addDate.add(1, 'day').startOf('day').valueOf(),
         forcastCount: '',
-      }
-  
+      };
+
       return feed;
     });
 
     return feeds;
   }
-
 }
 
 module.exports = JZFeedWorker;

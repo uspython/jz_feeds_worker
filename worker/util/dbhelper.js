@@ -1,9 +1,9 @@
 const mongoose = require('mongoose');
 const logger = require('../logger');
 
-const Feed = process.env.NODE_ENV === 'development' 
-? require('../models/mock_feed')
-:require('../models/feed');
+const Feed = process.env.NODE_ENV === 'development'
+  ? require('../models/mock_feed')
+  : require('../models/feed');
 
 function connect() {
   mongoose.connect(`${process.env.MONGO_URL}`, {
@@ -36,13 +36,7 @@ function addOneFeed(theFeed) {
 }
 
 async function addManyFeed(feeds) {
-  const session = await mongoose.startSession();
-  session.startTransaction();
-
-  await Feed.insertMany(feeds, { session });
-
-  await session.commitTransaction();
-  session.endSession();
+  await Feed.insertMany(feeds);
 }
 
 function alterFeed(theFeed) {
