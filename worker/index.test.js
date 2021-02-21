@@ -9,13 +9,11 @@ const {
   cityFrom,
   cityEnNameFrom,
   callbackFromWeather,
-  callWithRetry,
   provinceFrom,
   cityCnNameFrom,
+  WeatherDefaultDate,
 } = require('./util/worker_helper');
 
-const config = require('./config');
-const fetch = require('./fetch');
 const JZFeedWorker = require('./index');
 
 describe('Test City Utility', () => {
@@ -75,12 +73,12 @@ describe('Test JZFeedWorker', () => {
       disconnect();
     }, 500);
   });
-  test('should get initial date range: 2020-02-01/2020-02-28', async () => {
+  test(`should get initial date range: ${WeatherDefaultDate}/2020-02-28`, async () => {
     const city = cityFrom('肇庆');
     const w = new JZFeedWorker(city);
     const { from, to } = await w.getMonthRange();
-    expect(from).toBe('2020-02-01');
-    expect(to).toBe('2020-02-29');
+    expect(from).toBe(WeatherDefaultDate);
+    expect(to).toBe('2020-03-31');
   });
 
   test('should get test month range: 2020-11-11/2020-11-12', () => {
@@ -175,7 +173,7 @@ describe('Test JZFeedWorker', () => {
     expect(dataList.length).not.toBe(0);
   });
 
-  test('invoke should add feeds to databse by day', async () => {
+  test('should insert nothing to db', async () => {
     let result = null;
     let r = [];
     let error = null;
@@ -189,8 +187,27 @@ describe('Test JZFeedWorker', () => {
       error = err;
     }
 
+    expect(result).toBe(0);
+    expect(r.length).toBe(0);
+    expect(error).toBeNull();
+  });
+
+  test('invoke should add feeds to databse by month', async () => {
+    let result = null;
+    let r = [];
+    let error = null;
+
+    try {
+      const testCity = cityFrom('西安');
+      const w = new JZFeedWorker(testCity, 'month');
+      result = await w.invoke();
+      r = await queryCityFeeds({ cityId: testCity.id });
+    } catch (err) {
+      error = err;
+    }
+
     expect(r.length).not.toBe(0);
-    expect(result).toBe(1);
+    expect(result).toBeGreaterThanOrEqual(1);
     expect(error).toBeNull();
   });
 });

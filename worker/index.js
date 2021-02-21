@@ -1,6 +1,7 @@
 const dayjs = require('dayjs');
 const customParseFormat = require('dayjs/plugin/customParseFormat');
 const isSameOrAfter = require('dayjs/plugin/isSameOrAfter');
+const utc = require('dayjs/plugin/utc');
 const config = require('./config');
 const fetch = require('./fetch');
 const logger = require('./logger');
@@ -12,8 +13,10 @@ const {
   cityEnNameFrom,
   callbackFromWeather,
   provinceFrom,
+  WeatherDefaultDate,
 } = require('./util/worker_helper');
 
+dayjs.extend(utc);
 dayjs.extend(isSameOrAfter);
 dayjs.extend(customParseFormat);
 const DateFormatString = 'YYYY-MM-DD';
@@ -36,7 +39,7 @@ class JZFeedWorker {
       return null;
     }
 
-    let nextDay = '2020-03-01';
+    let nextDay = WeatherDefaultDate;
     const isExisted = await Feed.exists({ cityId });
 
     if (!isExisted) {
@@ -65,12 +68,12 @@ class JZFeedWorker {
       return null;
     }
 
-    let from = '2020-02-01';
-    let to = '2020-02-01';
+    let from = WeatherDefaultDate;
+    let to = from;
     const isExisted = await Feed.exists({ cityId });
 
     if (!isExisted) {
-      // From 2020-02-01
+      // From 2020-03-01
       const fromDate = dayjs(from, DateFormatString);
       to = fromDate.endOf('month').format(DateFormatString);
     } else {

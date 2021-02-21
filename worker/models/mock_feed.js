@@ -1,7 +1,6 @@
 const mongoose = require('mongoose');
 
 const { Schema, model } = mongoose;
-const timestamps = require('mongoose-timestamp');
 
 const MockFeedSchema = new Schema({
   cityId: { type: String, index: true },
@@ -13,9 +12,12 @@ const MockFeedSchema = new Schema({
   pollenCount: String,
   forcastDate: Date,
   forcastCount: String,
+}, {
+  timestamps: {
+    createdAt: 'createdAt',
+    updateAt: 'updateAt',
+  },
 });
-
-MockFeedSchema.plugin(timestamps);
 
 const MockFeed = model('MockFeed', MockFeedSchema);
 

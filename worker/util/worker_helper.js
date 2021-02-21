@@ -3,6 +3,9 @@ const { provinceObject } = require('../assets/province_object');
 const config = require('../config');
 const logger = require('../logger');
 
+// Start Date
+export const WeatherDefaultDate = '2020-03-01';
+
 export const wait = (ms) => new Promise((res) => setTimeout(res, ms));
 
 export const callWithRetry = async (fn, depth = 0) => {

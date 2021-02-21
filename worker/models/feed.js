@@ -1,7 +1,6 @@
 const mongoose = require('mongoose');
 
 const { Schema, model } = mongoose;
-const timestamps = require('mongoose-timestamp');
 
 const FeedSchema = new Schema({
   cityId: { type: String, index: true },
@@ -13,9 +12,13 @@ const FeedSchema = new Schema({
   pollenCount: String,
   forcastDate: Date,
   forcastCount: String,
+}, {
+  timestamps: {
+    createdAt: 'createdAt',
+    updateAt: 'updateAt',
+  },
 });
 
-FeedSchema.plugin(timestamps);
 const Feed = model('Feed', FeedSchema);
 
 module.exports = Feed;
