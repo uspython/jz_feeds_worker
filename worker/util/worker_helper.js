@@ -4,11 +4,11 @@ const config = require('../config');
 const logger = require('../logger');
 
 // Start Date
-export const WeatherDefaultDate = '2020-03-01';
+const WeatherDefaultDate = '2020-02-01';
 
-export const wait = (ms) => new Promise((res) => setTimeout(res, ms));
+const wait = (ms) => new Promise((res) => setTimeout(res, ms));
 
-export const callWithRetry = async (fn, depth = 0) => {
+const callWithRetry = async (fn, depth = 0) => {
   try {
     return await fn();
   } catch (e) {
@@ -22,7 +22,7 @@ export const callWithRetry = async (fn, depth = 0) => {
   }
 };
 
-export function cityFrom(cnName) {
+function cityFrom(cnName) {
   const citys = Object.values(cityMap)
     .reduce((p, c) => p.concat(c), [])
     .filter((c) => c.province.indexOf(cnName) > -1 || c.name.indexOf(cnName) > -1);
@@ -34,7 +34,7 @@ export function cityFrom(cnName) {
   return null;
 }
 
-export function provinceFrom(city) {
+function provinceFrom(city) {
   const { province } = city;
 
   const p = Object.values(provinceObject)
@@ -45,7 +45,7 @@ export function provinceFrom(city) {
   return p;
 }
 
-export function cityCnNameFrom(enName) {
+function cityCnNameFrom(enName) {
   const ret = config.citys.find(({ en }) => enName.indexOf(en) > -1);
 
   if (!ret) {
@@ -56,7 +56,7 @@ export function cityCnNameFrom(enName) {
   return cn;
 }
 
-export function cityEnNameFrom(cnName) {
+function cityEnNameFrom(cnName) {
   const ret = config.citys.find(({ cn }) => cnName.indexOf(cn) > -1);
 
   if (!ret) {
@@ -70,7 +70,7 @@ export function cityEnNameFrom(cnName) {
 // For weather api only
 // eslint-disable-next-line max-len
 // resp:callback({"dataList":[{"elenum":1,"week":"星期日","addTime":"2020-03-01","city":"","level":"","cityCode":"","num":"","eletype":"花粉","content":""}]})
-export function callbackFromWeather(resp) {
+function callbackFromWeather(resp) {
   let jsonStr = '';
   const regex = /(?<=callback\()(.*)(?=\))/m;
   const m = regex.exec(resp);
@@ -91,3 +91,12 @@ export function callbackFromWeather(resp) {
 
   return null;
 }
+
+module.exports.cityFrom = cityFrom;
+module.exports.cityEnNameFrom = cityEnNameFrom;
+module.exports.callbackFromWeather = callbackFromWeather;
+module.exports.callWithRetry = callWithRetry;
+module.exports.WeatherDefaultDate = WeatherDefaultDate;
+module.exports.provinceFrom = provinceFrom;
+module.exports.cityCnNameFrom = cityCnNameFrom;
+module.exports.wait = wait;

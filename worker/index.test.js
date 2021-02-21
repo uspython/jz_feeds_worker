@@ -78,7 +78,7 @@ describe('Test JZFeedWorker', () => {
     const w = new JZFeedWorker(city);
     const { from, to } = await w.getMonthRange();
     expect(from).toBe(WeatherDefaultDate);
-    expect(to).toBe('2020-03-31');
+    expect(to).toBe(dayjs(WeatherDefaultDate).endOf('month').format('YYYY-MM-DD'));
   });
 
   test('should get test month range: 2020-11-11/2020-11-12', () => {

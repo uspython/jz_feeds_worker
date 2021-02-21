@@ -11,4 +11,4 @@ COPY . ./
 
 EXPOSE 8964
 
-CMD ["npm", "start"]
+CMD ["npm", "start:express"]

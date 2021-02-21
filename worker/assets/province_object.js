@@ -128,4 +128,4 @@ const provinceObject = {
   },
 };
 
-export { provinceObject };
+module.exports = { provinceObject };

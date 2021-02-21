@@ -7,14 +7,14 @@ const expressLogger = require('morgan');
 // optional
 // const ms = require('ms');
 // const dayjs = require('dayjs');
-// const Graceful = require('@ladjs/graceful');
+const Graceful = require('@ladjs/graceful');
 // const Cabin = require('cabin');
+const Bree = require('bree');
 
 // // required
 // const Bree = require('bree');
 const usersRouter = require('./routes/users');
 const indexRouter = require('./routes/index');
-const { connect } = require('./worker/util/dbhelper');
 const logger = require('./worker/logger');
 
 // const fetch = require('./worker/fetch');
@@ -60,6 +60,22 @@ app.listen(port, () => {
   logger.info(`Example app listening at http://localhost:${port}`);
 });
 
-connect();
+const bree = new Bree({
+  // logger: new Cabin(),
+  jobs: [
+    {
+      name: 'weather',
+      timeout: '30s',
+      interval: '30m',
+    },
+  ],
+});
+
+// handle graceful reloads, pm2 support, and events like SIGHUP, SIGINT, etc.
+const graceful = new Graceful({ brees: [bree] });
+graceful.listen();
+
+// start all jobs (this is the equivalent of reloading a crontab):
+bree.start();
 
 module.exports = app;

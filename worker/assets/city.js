@@ -1780,4 +1780,5 @@ let cityMap = {
     },
   ],
 };
-export { cityMap };
+
+module.exports = { cityMap }

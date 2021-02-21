@@ -5,8 +5,8 @@ const Feed = process.env.NODE_ENV === 'development'
   ? require('../models/mock_feed')
   : require('../models/feed');
 
-export function connect() {
-  mongoose.connect(`${process.env.MONGO_URL}`, {
+async function connect() {
+  await mongoose.connect(`${process.env.MONGO_URL}`, {
     useNewUrlParser: true,
     user: `${process.env.ME_CONFIG_MONGODB_ADMINUSERNAME}`,
     pass: `${process.env.ME_CONFIG_MONGODB_ADMINPASSWORD}`,
@@ -24,14 +24,14 @@ export function connect() {
   });
 }
 
-export function disconnect() {
+function disconnect() {
   mongoose.disconnect().then(() => {
     // we're connected!
     logger.info('Database Disonnected!');
   });
 }
 
-export function addOneFeed(theFeed) {
+function addOneFeed(theFeed) {
   Feed.create(theFeed, (err) => {
     if (err) {
       logger.warn(err);
@@ -42,12 +42,12 @@ export function addOneFeed(theFeed) {
   });
 }
 
-export async function addManyFeeds(feeds) {
+async function addManyFeeds(feeds) {
   const d = await Feed.insertMany(feeds);
   return d.length;
 }
 
-export async function alterFeed(theFeed) {
+async function alterFeed(theFeed) {
   const { cityId, releaseDate } = theFeed;
   const { nModified = 0 } = await Feed.updateOne(
     { cityId, releaseDate },
@@ -60,7 +60,7 @@ export async function alterFeed(theFeed) {
   return nModified;
 }
 
-export function deleteFeed(theFeed) {
+function deleteFeed(theFeed) {
   const { cityId, releaseDate } = theFeed;
   const d = Feed.deleteOne({ cityId, releaseDate }, (err) => {
     if (err) {
@@ -75,7 +75,7 @@ export function deleteFeed(theFeed) {
   return d;
 }
 
-export async function queryCityFeeds(filter) {
+async function queryCityFeeds(filter) {
   // const { cityId, releaseDate } = theFeed;
 
   try {
@@ -91,3 +91,11 @@ export async function queryCityFeeds(filter) {
     return [];
   }
 }
+
+module.exports.connect = connect;
+module.exports.addOneFeed = addOneFeed;
+module.exports.addManyFeeds = addManyFeeds;
+module.exports.alterFeed = alterFeed;
+module.exports.deleteFeed = deleteFeed;
+module.exports.disconnect = disconnect;
+module.exports.queryCityFeeds = queryCityFeeds;

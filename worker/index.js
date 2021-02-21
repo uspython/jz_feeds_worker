@@ -47,9 +47,9 @@ class JZFeedWorker {
     } else {
       const { releaseDate } = await Feed.findOne(
         { cityId },
-        {},
-        { sort: { createdAt: -1 } },
-      );
+        null,
+        { sort: { releaseDate: -1 } },
+      ).exec();
 
       if (releaseDate) {
         const d = dayjs(releaseDate).add(1, 'day');
@@ -80,15 +80,15 @@ class JZFeedWorker {
       const { releaseDate } = await Feed.findOne(
         { cityId },
         {},
-        { sort: { createdAt: -1 } },
-      );
+        { sort: { releaseDate: -1 } },
+      ).exec();
 
       if (releaseDate) {
         const d = dayjs(releaseDate).add(1, 'day');
         from = d.format(DateFormatString);
         const endOfMonth = d.endOf('month');
         to = endOfMonth.isAfter(dayjs().startOf('day'))
-          ? from
+          ? dayjs().startOf('day').format(DateFormatString)
           : endOfMonth.startOf('day').format(DateFormatString);
       }
     }
@@ -100,13 +100,18 @@ class JZFeedWorker {
     // const url = `${config.weatherUrl}`;
     const { from = '', to = '' } = params;
 
+    const cityCode = cityEnNameFrom(this.city.province + this.city.name);
+
+    if (!cityCode || cityCode.length === 0) {
+      throw new Error('City Code can not be Empty');
+    }
     const weatherParams = {
       eletype: 1,
-      city: cityEnNameFrom(this.city.name),
+      city: cityCode,
       start: from,
       end: to,
+      callback: 'callback',
     };
-
     try {
       const { status, statusText, data } = await fetch(
         'GET',
@@ -122,22 +127,23 @@ class JZFeedWorker {
         return dataList || [];
       }
     } catch (error) {
+      logger.error({ err: error });
       if (error.response) {
         // The request was made and the server responded with a status code
         // that falls out of the range of 2xx
-        console.log(error.response.data);
-        console.log(error.response.status);
-        console.log(error.response.headers);
+        // console.log(error.response.data);
+        // console.log(error.response.status);
+        // console.log(error.response.headers);
       } else if (error.request) {
         // The request was made but no response was received
         // `error.request` is an instance of XMLHttpRequest in the browser and an instance of
         // http.ClientRequest in node.js
-        console.log(error.request);
+        // console.log(error.request);
       } else {
         // Something happened in setting up the request that triggered an Error
-        console.log('Error', error.message);
+        // console.log('Error', error.message);
       }
-      console.log(error.config);
+      // console.log(error.config);
 
       return [];
     }
@@ -210,6 +216,7 @@ class JZFeedWorker {
     logger.info(`\
 [Worker]: Worker invoked, \
 city: ${this.city.name} \
+date: ${dateRange.from} ${dateRange.to} \
 type: ${this.scheduleType} \
 count: ${count}`);
 
