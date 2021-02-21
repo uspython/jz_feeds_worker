@@ -3,9 +3,9 @@ const { provinceObject } = require('../assets/province_object');
 const config = require('../config');
 const logger = require('../logger');
 
-const wait = (ms) => new Promise((res) => setTimeout(res, ms));
+export const wait = (ms) => new Promise((res) => setTimeout(res, ms));
 
-const callWithRetry = async (fn, depth = 0) => {
+export const callWithRetry = async (fn, depth = 0) => {
   try {
     return await fn();
   } catch (e) {
@@ -19,7 +19,7 @@ const callWithRetry = async (fn, depth = 0) => {
   }
 };
 
-function cityFrom(cnName) {
+export function cityFrom(cnName) {
   const citys = Object.values(cityMap)
     .reduce((p, c) => p.concat(c), [])
     .filter((c) => c.province.indexOf(cnName) > -1 || c.name.indexOf(cnName) > -1);
@@ -53,7 +53,7 @@ export function cityCnNameFrom(enName) {
   return cn;
 }
 
-function cityEnNameFrom(cnName) {
+export function cityEnNameFrom(cnName) {
   const ret = config.citys.find(({ cn }) => cnName.indexOf(cn) > -1);
 
   if (!ret) {
@@ -67,7 +67,7 @@ function cityEnNameFrom(cnName) {
 // For weather api only
 // eslint-disable-next-line max-len
 // resp:callback({"dataList":[{"elenum":1,"week":"星期日","addTime":"2020-03-01","city":"","level":"","cityCode":"","num":"","eletype":"花粉","content":""}]})
-function callbackFromWeather(resp) {
+export function callbackFromWeather(resp) {
   let jsonStr = '';
   const regex = /(?<=callback\()(.*)(?=\))/m;
   const m = regex.exec(resp);
@@ -82,14 +82,9 @@ function callbackFromWeather(resp) {
   try {
     const ret = JSON.parse(jsonStr);
     return ret;
-  } catch (error) {
-    logger.info(error);
+  } catch (err) {
+    logger.error({ err });
   }
 
   return null;
 }
-
-module.exports.cityFrom = cityFrom;
-module.exports.cityEnNameFrom = cityEnNameFrom;
-module.exports.callbackFromWeather = callbackFromWeather;
-module.exports.callWithRetry = callWithRetry;

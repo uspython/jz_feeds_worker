@@ -1,6 +1,7 @@
 const dayjs = require('dayjs');
 const {
   connect,
+  disconnect,
   alterFeed,
   queryCityFeeds,
 } = require('./util/dbhelper');
@@ -65,8 +66,15 @@ describe('Test City Utility', () => {
 });
 
 describe('Test JZFeedWorker', () => {
-  connect();
+  beforeAll(() => {
+    connect();
+  });
 
+  afterAll(() => {
+    setTimeout(() => {
+      disconnect();
+    }, 500);
+  });
   test('should get initial date range: 2020-02-01/2020-02-28', async () => {
     const city = cityFrom('肇庆');
     const w = new JZFeedWorker(city);
@@ -167,14 +175,22 @@ describe('Test JZFeedWorker', () => {
     expect(dataList.length).not.toBe(0);
   });
 
-  test('invoke should add feeds to databse by day', () => {
-    const testCity = cityFrom('西安');
-    const w = new JZFeedWorker(testCity, 'day');
+  test('invoke should add feeds to databse by day', async () => {
+    let result = null;
+    let r = [];
+    let error = null;
 
-    expect(async () => {
-      await w.invoke();
-      const r = await queryCityFeeds({ cityId: testCity.id });
-      expect(r.length).not.toBe(0);
-    }).not.toThrowError();
+    try {
+      const testCity = cityFrom('西安');
+      const w = new JZFeedWorker(testCity, 'day');
+      result = await w.invoke();
+      r = await queryCityFeeds({ cityId: testCity.id });
+    } catch (err) {
+      error = err;
+    }
+
+    expect(r.length).not.toBe(0);
+    expect(result).toBe(1);
+    expect(error).toBeNull();
   });
 });

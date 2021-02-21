@@ -5,7 +5,7 @@ const Feed = process.env.NODE_ENV === 'development'
   ? require('../models/mock_feed')
   : require('../models/feed');
 
-function connect() {
+export function connect() {
   mongoose.connect(`${process.env.MONGO_URL}`, {
     useNewUrlParser: true,
     user: `${process.env.ME_CONFIG_MONGODB_ADMINUSERNAME}`,
@@ -13,7 +13,7 @@ function connect() {
     autoIndex: process.env.NODE_ENV === 'development',
   }, (err) => {
     if (err) {
-      logger.error(err);
+      logger.error({ err });
     }
   });
 
@@ -24,7 +24,14 @@ function connect() {
   });
 }
 
-function addOneFeed(theFeed) {
+export function disconnect() {
+  mongoose.disconnect().then(() => {
+    // we're connected!
+    logger.info('Database Disonnected!');
+  });
+}
+
+export function addOneFeed(theFeed) {
   Feed.create(theFeed, (err) => {
     if (err) {
       logger.warn(err);
@@ -35,24 +42,25 @@ function addOneFeed(theFeed) {
   });
 }
 
-async function addManyFeeds(feeds) {
-  await Feed.insertMany(feeds);
+export async function addManyFeeds(feeds) {
+  const d = await Feed.insertMany(feeds);
+  return d.length;
 }
 
-async function alterFeed(theFeed) {
+export async function alterFeed(theFeed) {
   const { cityId, releaseDate } = theFeed;
   const { nModified = 0 } = await Feed.updateOne(
-      { cityId, releaseDate }, 
-      { ...theFeed },
-      // [options.upsert=false] «Boolean» if true, and no documents found, insert a new document
-      { upsert: true }
-    );
+    { cityId, releaseDate },
+    { ...theFeed },
+    // [options.upsert=false] «Boolean» if true, and no documents found, insert a new document
+    { upsert: true },
+  );
 
   logger.info(`Feed Altered, ${cityId}, ${releaseDate}, ${nModified} modified`);
   return nModified;
 }
 
-function deleteFeed(theFeed) {
+export function deleteFeed(theFeed) {
   const { cityId, releaseDate } = theFeed;
   const d = Feed.deleteOne({ cityId, releaseDate }, (err) => {
     if (err) {
@@ -67,7 +75,7 @@ function deleteFeed(theFeed) {
   return d;
 }
 
-async function queryCityFeeds(filter) {
+export async function queryCityFeeds(filter) {
   // const { cityId, releaseDate } = theFeed;
 
   try {
@@ -83,10 +91,3 @@ async function queryCityFeeds(filter) {
     return [];
   }
 }
-
-module.exports.connect = connect;
-module.exports.addOneFeed = addOneFeed;
-module.exports.addManyFeeds = addManyFeeds;
-module.exports.alterFeed = alterFeed;
-module.exports.deleteFeed = deleteFeed;
-module.exports.queryCityFeeds = queryCityFeeds;

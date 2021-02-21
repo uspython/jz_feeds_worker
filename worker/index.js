@@ -11,7 +11,6 @@ const Feed = process.env.NODE_ENV === 'development'
 const {
   cityEnNameFrom,
   callbackFromWeather,
-  callWithRetry,
   provinceFrom,
 } = require('./util/worker_helper');
 
@@ -193,7 +192,7 @@ class JZFeedWorker {
     // Guard Tomorrow
     const tomorrow = dayjs().add(1, 'day').startOf('day');
     if (dayjs(dateRange.to, DateFormatString).isSameOrAfter(tomorrow)) {
-      return;
+      return 0;
     }
 
     const rawData = await this.fetchRawDataFromWeather(dateRange);
@@ -201,15 +200,17 @@ class JZFeedWorker {
 
     // Guard feeds length
     if (feeds.length <= 0) {
-      return;
+      return 0;
     }
 
-    await addManyFeeds(feeds);
+    const count = await addManyFeeds(feeds);
     logger.info(`\
 [Worker]: Worker invoked, \
 city: ${this.city.name} \
 type: ${this.scheduleType} \
-count: ${feeds.length}`);
+count: ${count}`);
+
+    return count;
   }
 }
 
