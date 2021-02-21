@@ -75,12 +75,14 @@ describe('Test JZFeedWorker', () => {
     expect(to).toBe('2020-02-29');
   });
 
-  test('should get test month range: 2020-11-11/2020-11-12', async () => {
-    const jieyang = cityFrom('揭阳');
-    const w = new JZFeedWorker(jieyang);
-    const { from, to } = await w.getMonthRange();
-    expect(from).toBe('2020-11-12');
-    expect(to).toBe('2020-11-30');
+  test('should get test month range: 2020-11-11/2020-11-12', () => {
+    expect(async () => {
+      const jieyang = cityFrom('揭阳');
+      const w = new JZFeedWorker(jieyang);
+      const { from, to } = await w.getMonthRange();
+      expect(from).toBe('2020-11-12');
+      expect(to).toBe('2020-11-30');
+    }).not.toThrowError();
   });
 
   test('month range should before (NOW + 1Day)', async () => {
@@ -98,8 +100,8 @@ describe('Test JZFeedWorker', () => {
       forcastDate: today.add(1, 'day').valueOf(),
       forcastCount: '500 - 800',
     };
-  
-    await alterFeed(newFeed)
+
+    await alterFeed(newFeed);
 
     const w = new JZFeedWorker(testCity);
     const { from, to } = await w.getMonthRange();
@@ -110,8 +112,9 @@ describe('Test JZFeedWorker', () => {
   test('should get test date: 2020-11-12', async () => {
     const jieyang = cityFrom('揭阳');
     const w = new JZFeedWorker(jieyang);
-    const nextDay = await w.getNextDayRange();
-    expect(nextDay).toBe('2020-11-12');
+    const { from, to } = await w.getNextDayRange();
+    expect(from).toBe('2020-11-12');
+    expect(to).toBe('2020-11-12');
   });
 
   test('fetch weather api should return raw data', async () => {
@@ -173,6 +176,5 @@ describe('Test JZFeedWorker', () => {
       const r = await queryCityFeeds({ cityId: testCity.id });
       expect(r.length).not.toBe(0);
     }).not.toThrowError();
-  })
-  
+  });
 });

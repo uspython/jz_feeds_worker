@@ -78,7 +78,6 @@ test('Alter Feed by Add New One', async (done) => {
     } catch (error) {
       done(error);
     }
-
   }).not.toThrow(Error);
 });
 

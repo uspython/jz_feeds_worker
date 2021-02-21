@@ -15,6 +15,7 @@ const {
   provinceFrom,
 } = require('./util/worker_helper');
 
+dayjs.extend(isSameOrAfter);
 dayjs.extend(customParseFormat);
 const DateFormatString = 'YYYY-MM-DD';
 
@@ -83,9 +84,10 @@ class JZFeedWorker {
       if (releaseDate) {
         const d = dayjs(releaseDate).add(1, 'day');
         from = d.format(DateFormatString);
-        to = d.endOf('month').isAfter(dayjs().startOf('day')) 
-          ? dayjs().startOf('day').format(DateFormatString) 
-          : from;
+        const endOfMonth = d.endOf('month');
+        to = endOfMonth.isAfter(dayjs().startOf('day'))
+          ? from
+          : endOfMonth.startOf('day').format(DateFormatString);
       }
     }
 
@@ -177,16 +179,16 @@ class JZFeedWorker {
           forcastCount: '',
         };
 
-      return feed;
-    });
+        return feed;
+      });
 
     return feeds;
   }
 
   async invoke() {
-    const dateRangePromise = this.scheduleType === 'month' 
-                                ? this.getMonthRange() 
-                                : this.getNextDayRange();
+    const dateRangePromise = this.scheduleType === 'month'
+      ? this.getMonthRange()
+      : this.getNextDayRange();
     const dateRange = await dateRangePromise;
     // Guard Tomorrow
     const tomorrow = dayjs().add(1, 'day').startOf('day');
@@ -194,22 +196,20 @@ class JZFeedWorker {
       return;
     }
 
-    const 
-      rawData = await this.fetchRawDataFromWeather(dateRange),
-      feeds = this.feedsFromWeatherRaw(rawData);
+    const rawData = await this.fetchRawDataFromWeather(dateRange);
+    const feeds = this.feedsFromWeatherRaw(rawData);
 
     // Guard feeds length
     if (feeds.length <= 0) {
       return;
     }
-    
+
     await addManyFeeds(feeds);
     logger.info(`\
 [Worker]: Worker invoked, \
 city: ${this.city.name} \
 type: ${this.scheduleType} \
 count: ${feeds.length}`);
-
   }
 }
 
