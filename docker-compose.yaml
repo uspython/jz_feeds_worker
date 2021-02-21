@@ -74,7 +74,7 @@ services:
     container_name: worker
     user: "node"
     working_dir: /home/node/app
-    restart: always
+    # restart: always
     build:
       context: .
       dockerfile: Dockerfile
@@ -90,6 +90,11 @@ services:
       nofile:
         soft: 65536
         hard: 65536
+    command:
+      - /bin/sh
+      - -c
+      - |
+        npm start
     volumes:
       - ./:/home/node/app
     ports:

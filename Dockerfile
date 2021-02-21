@@ -10,5 +10,3 @@ RUN npm install --verbose
 COPY . ./
 
 EXPOSE 8964
-
-CMD ["npm", "start:express"]
