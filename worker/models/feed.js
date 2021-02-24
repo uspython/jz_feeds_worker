@@ -20,5 +20,5 @@ const FeedSchema = new Schema({
 });
 
 const Feed = model('Feed', FeedSchema);
-// Feed.ensureIndexes();
+//Feed.ensureIndexes();
 module.exports = Feed;

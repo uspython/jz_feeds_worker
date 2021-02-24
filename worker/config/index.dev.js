@@ -5,7 +5,7 @@ const config = {
     a: 'param',
   },
   weatherUrl: ' ',
-  citys: [
+  weatherCitys: [
     { en: 'beijing', cn: '北京' },
   ],
 };

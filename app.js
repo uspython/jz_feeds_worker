@@ -65,8 +65,8 @@ const bree = new Bree({
   jobs: [
     {
       name: 'weather',
-      timeout: '30s',
-      interval: '30m',
+      timeout: '30m',
+      interval: '1h',
     },
   ],
 });

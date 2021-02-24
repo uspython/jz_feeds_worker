@@ -1,9 +1,7 @@
 const mongoose = require('mongoose');
 const logger = require('../logger');
 
-const Feed = process.env.NODE_ENV === 'development'
-  ? require('../models/mock_feed')
-  : require('../models/feed');
+const Feed = require('../models/feed');
 
 async function connect() {
   await mongoose.connect(`${process.env.MONGO_URL}`, {

@@ -8,7 +8,7 @@ services:
       - "8082:8080"
     networks:
       extnetwork:
-        ipv4_address: 172.24.0.6
+        ipv4_address: 172.25.0.6
     depends_on:
       - db
     environment:
@@ -30,7 +30,7 @@ services:
       - POSTGRES_DATABASE=${POSTGRES_DATABASE}
     networks:
       extnetwork:
-        ipv4_address: 172.24.0.7
+        ipv4_address: 172.25.0.7
     volumes:
       - miniflux-db:/var/lib/postgresql/data
   mongo:
@@ -50,7 +50,7 @@ services:
       - "27017:27017"
     networks:
       extnetwork:
-        ipv4_address: 172.24.0.2
+        ipv4_address: 172.25.0.2
   mongo-express:
     container_name: mongo_exp
     image: mongo-express:0.54.0
@@ -69,12 +69,12 @@ services:
       - "8088:8081"
     networks:
       extnetwork:
-        ipv4_address: 172.24.0.3
+        ipv4_address: 172.25.0.3
   feed-worker:
     container_name: worker
     user: "node"
     working_dir: /home/node/app
-    restart: always
+    #restart: always
     build:
       context: .
       dockerfile: Dockerfile
@@ -101,12 +101,12 @@ services:
       - "8964:3001"
     networks:
       extnetwork:
-        ipv4_address: 172.24.0.5
+        ipv4_address: 172.25.0.5
 networks:
   extnetwork:
     ipam:
       config:
-        - subnet: 172.24.0.0/16
+        - subnet: 172.25.0.0/16
 
 volumes:
   miniflux-db:

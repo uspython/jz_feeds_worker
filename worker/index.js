@@ -6,9 +6,7 @@ const config = require('./config');
 const fetch = require('./fetch');
 const logger = require('./logger');
 const { addManyFeeds } = require('./util/dbhelper');
-const Feed = process.env.NODE_ENV === 'development'
-  ? require('./models/mock_feed')
-  : require('./models/feed');
+const Feed = require('./models/feed');
 const {
   cityEnNameFrom,
   callbackFromWeather,
@@ -203,7 +201,7 @@ class JZFeedWorker {
     if (dayjs(dateRange.to, DateFormatString).isSameOrAfter(tomorrow)) {
       return 0;
     }
-
+    logger.info(`[Worker]: DateRange: ${dateRange.from} ${dateRange.to}`);
     const rawData = await this.fetchRawDataFromWeather(dateRange);
     const feeds = this.feedsFromWeatherRaw(rawData);
 

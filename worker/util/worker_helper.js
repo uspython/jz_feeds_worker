@@ -4,7 +4,7 @@ const config = require('../config');
 const logger = require('../logger');
 
 // Start Date
-const WeatherDefaultDate = '2020-02-01';
+const WeatherDefaultDate = '2020-03-01';
 
 const wait = (ms) => new Promise((res) => setTimeout(res, ms));
 
@@ -46,7 +46,7 @@ function provinceFrom(city) {
 }
 
 function cityCnNameFrom(enName) {
-  const ret = config.citys.find(({ en }) => enName.indexOf(en) > -1);
+  const ret = config.weatherCitys.find(({ en }) => enName.indexOf(en) > -1);
 
   if (!ret) {
     return '';
@@ -57,7 +57,7 @@ function cityCnNameFrom(enName) {
 }
 
 function cityEnNameFrom(cnName) {
-  const ret = config.citys.find(({ cn }) => cnName.indexOf(cn) > -1);
+  const ret = config.weatherCitys.find(({ cn }) => cnName.indexOf(cn) > -1);
 
   if (!ret) {
     return '';
