@@ -8,7 +8,6 @@ COPY ./package*.json ./
 RUN npm install --silence
 RUN npm install -g nodemon
 
-COPY .aws /home/node/.aws
 COPY . ./
 
 EXPOSE 8964

@@ -93,7 +93,7 @@ describe('Test JZFeedWorker', () => {
 
   test('month range should before (NOW + 1Day)', async () => {
     const testCity = cityFrom('三门峡');
-    const today = dayjs().startOf('day');
+    const today = dayjs().startOf('day').add(8, 'hours');
 
     const newFeed = {
       cityId: testCity.id,
@@ -171,43 +171,5 @@ describe('Test JZFeedWorker', () => {
 
     const { dataList } = r;
     expect(dataList.length).not.toBe(0);
-  });
-
-  test('should insert nothing to db', async () => {
-    let result = null;
-    let r = [];
-    let error = null;
-
-    try {
-      const testCity = cityFrom('西安');
-      const w = new JZFeedWorker(testCity, 'day');
-      result = await w.invoke();
-      r = await queryCityFeeds({ cityId: testCity.id });
-    } catch (err) {
-      error = err;
-    }
-
-    expect(result).toBe(0);
-    expect(r.length).toBe(0);
-    expect(error).toBeNull();
-  });
-
-  test('invoke should add feeds to databse by month', async () => {
-    let result = null;
-    let r = [];
-    let error = null;
-
-    try {
-      const testCity = cityFrom('西安');
-      const w = new JZFeedWorker(testCity, 'month');
-      result = await w.invoke();
-      r = await queryCityFeeds({ cityId: testCity.id });
-    } catch (err) {
-      error = err;
-    }
-
-    expect(r.length).not.toBe(0);
-    expect(result).toBeGreaterThanOrEqual(1);
-    expect(error).toBeNull();
   });
 });

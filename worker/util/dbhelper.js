@@ -97,3 +97,4 @@ module.exports.alterFeed = alterFeed;
 module.exports.deleteFeed = deleteFeed;
 module.exports.disconnect = disconnect;
 module.exports.queryCityFeeds = queryCityFeeds;
+module.exports.Feed = Feed;

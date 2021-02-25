@@ -5,8 +5,8 @@ const utc = require('dayjs/plugin/utc');
 const config = require('./config');
 const fetch = require('./fetch');
 const logger = require('./logger');
-const { addManyFeeds } = require('./util/dbhelper');
-const Feed = require('./models/feed');
+const { addManyFeeds, Feed } = require('./util/dbhelper');
+
 const {
   cityEnNameFrom,
   callbackFromWeather,
@@ -86,7 +86,7 @@ class JZFeedWorker {
         from = d.format(DateFormatString);
         const endOfMonth = d.endOf('month');
         to = endOfMonth.isAfter(dayjs().startOf('day'))
-          ? dayjs().startOf('day').format(DateFormatString)
+          ? from
           : endOfMonth.startOf('day').format(DateFormatString);
       }
     }
@@ -172,7 +172,7 @@ class JZFeedWorker {
       .filter(({ num }) => (`${num}`.trim().length > 0))
       .map((d) => {
         const { addTime, num } = d;
-        const addDate = dayjs(addTime);
+        const addDate = dayjs(addTime).add(8, 'hours'); // GMT+8 beijing
         const feed = {
           cityId: this.city.id,
           region: {

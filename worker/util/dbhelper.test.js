@@ -9,9 +9,7 @@ import {
   disconnect,
 } from './dbhelper';
 
-const Feed = process.env.NODE_ENV === 'development'
-  ? require('../models/mock_feed')
-  : require('../models/feed');
+const Feed = require('../models/feed');
 
 describe('Test dbhelper', () => {
   describe('connect db', () => {
