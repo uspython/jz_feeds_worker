@@ -2,6 +2,7 @@ docker-compose.yaml
 worker/config/index.js
 .vscode
 .aws
+prod
 
 # Logs
 logs
