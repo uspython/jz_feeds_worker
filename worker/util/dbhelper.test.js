@@ -25,8 +25,8 @@ describe('Test dbhelper', () => {
       },
       releaseDate: dayjs('2020-11-11').startOf('day').valueOf(),
       pollenCount: '1',
-      forcastDate: dayjs('2020-11-11').add(1, 'day').startOf('day').valueOf(),
-      forcastCount: '500 - 800',
+      forecastDate: dayjs('2020-11-11').add(1, 'day').startOf('day').valueOf(),
+      forecastCount: '500 - 800',
     };
 
     test('Insert Feed', () => {
@@ -56,8 +56,8 @@ describe('Test dbhelper', () => {
         },
         releaseDate: dayjs('2020-11-11').startOf('day').valueOf(),
         pollenCount: '4',
-        forcastDate: dayjs('2020-11-11').add(1, 'day').startOf('day').valueOf(),
-        forcastCount: '500 - 800',
+        forecastDate: dayjs('2020-11-11').add(1, 'day').startOf('day').valueOf(),
+        forecastCount: '500 - 800',
       };
 
       expect(async () => {
@@ -67,13 +67,13 @@ describe('Test dbhelper', () => {
           const results = await queryCityFeeds(newFeed);
 
           const [{
-            cityId, releaseDate, forcastDate, pollenCount,
+            cityId, releaseDate, forecastDate, pollenCount,
           }] = results;
 
           expect(results.length).not.toBe(0);
           expect(cityId).toBe('445200000000');
           expect(releaseDate.valueOf()).toBe(dayjs('2020-11-11').startOf('day').valueOf());
-          expect(forcastDate.valueOf()).toBe(dayjs('2020-11-11').add(1, 'day').startOf('day').valueOf());
+          expect(forecastDate.valueOf()).toBe(dayjs('2020-11-11').add(1, 'day').startOf('day').valueOf());
           expect(pollenCount).toBe('4');
 
           done();

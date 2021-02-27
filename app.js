@@ -66,7 +66,7 @@ const bree = new Bree({
     {
       name: 'weather',
       timeout: '30m',
-      interval: '1h',
+      interval: `${process.env.WEATHER_JOB_INTERVAL || '1h'}`,
     },
   ],
 });

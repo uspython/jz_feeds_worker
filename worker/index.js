@@ -172,17 +172,17 @@ class JZFeedWorker {
       .filter(({ num }) => (`${num}`.trim().length > 0))
       .map((d) => {
         const { addTime, num } = d;
-        const addDate = dayjs(addTime).add(8, 'hours'); // GMT+8 beijing
+        const addDate = dayjs(addTime).startOf('day').add(8, 'hours'); // GMT+8 beijing
         const feed = {
           cityId: this.city.id,
           region: {
             provinceId: provinceFrom(this.city).id,
             countryId: this.city.id,
           },
-          releaseDate: addDate.startOf('day').valueOf(),
+          releaseDate: addDate.valueOf(),
           pollenCount: `${num}`,
-          forcastDate: addDate.add(1, 'day').startOf('day').valueOf(),
-          forcastCount: '',
+          forecastDate: addDate.add(1, 'day').valueOf(),
+          forecastCount: '',
         };
 
         return feed;

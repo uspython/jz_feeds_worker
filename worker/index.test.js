@@ -103,8 +103,8 @@ describe('Test JZFeedWorker', () => {
       },
       releaseDate: today.valueOf(),
       pollenCount: '400',
-      forcastDate: today.add(1, 'day').valueOf(),
-      forcastCount: '500 - 800',
+      forecastDate: today.add(1, 'day').valueOf(),
+      forecastCount: '500 - 800',
     };
 
     await alterFeed(newFeed);
@@ -157,7 +157,7 @@ describe('Test JZFeedWorker', () => {
       cityId, pollenCount, releaseDate, region,
     }] = feeds;
     expect(cityId).toBe(testCity.id);
-    expect(releaseDate).toBe(dayjs('2020-03-11').startOf('day').valueOf());
+    expect(releaseDate).toBe(dayjs('2020-03-11').startOf('day').add(8, 'hours').valueOf());
     expect(region.provinceId).toBe(provinceFrom(testCity).id);
     expect(pollenCount).toBe('202');
   });

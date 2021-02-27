@@ -10,8 +10,8 @@ const FeedSchema = new Schema({
     countryId: String,
   },
   pollenCount: String,
-  forcastDate: Date,
-  forcastCount: String,
+  forecastDate: Date,
+  forecastCount: String,
 }, {
   timestamps: {
     createdAt: 'createdAt',
@@ -20,5 +20,5 @@ const FeedSchema = new Schema({
 });
 
 const Feed = model('Feed', FeedSchema);
-//Feed.ensureIndexes();
+// Feed.ensureIndexes();
 module.exports = Feed;
