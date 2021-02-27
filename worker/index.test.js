@@ -3,7 +3,6 @@ const {
   connect,
   disconnect,
   alterFeed,
-  queryCityFeeds,
 } = require('./util/dbhelper');
 const {
   cityFrom,
@@ -12,11 +11,21 @@ const {
   provinceFrom,
   cityCnNameFrom,
   WeatherDefaultDate,
+  randomizeArray,
 } = require('./util/worker_helper');
 
 const JZFeedWorker = require('./index');
 
 describe('Test City Utility', () => {
+  test('should randomize the Array', () => {
+    const a = [1, 2, 3, 4, 5, 6, 7, 8, 9, 0];
+
+    const r = randomizeArray(a);
+
+    expect(r[9]).not.toBe(0);
+    expect(r.length).toBe(10);
+  });
+
   test('should return beijing', () => {
     const testCity = cityFrom('北京');
 

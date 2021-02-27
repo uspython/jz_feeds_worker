@@ -92,6 +92,25 @@ function callbackFromWeather(resp) {
   return null;
 }
 
+function randomizeArray(original) {
+  if (original.length === 0) {
+    return [];
+  }
+
+  let ret = [...original];
+  const a2 = [];
+
+  while (ret.length !== 0) {
+    const randomIndex = Math.floor(Math.random() * ret.length);
+    a2.push(ret[randomIndex]);
+    ret.splice(randomIndex, 1);
+  }
+
+  ret = a2;
+
+  return ret;
+}
+
 module.exports.cityFrom = cityFrom;
 module.exports.cityEnNameFrom = cityEnNameFrom;
 module.exports.callbackFromWeather = callbackFromWeather;
@@ -100,3 +119,4 @@ module.exports.WeatherDefaultDate = WeatherDefaultDate;
 module.exports.provinceFrom = provinceFrom;
 module.exports.cityCnNameFrom = cityCnNameFrom;
 module.exports.wait = wait;
+module.exports.randomizeArray = randomizeArray;
