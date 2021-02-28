@@ -68,6 +68,11 @@ const bree = new Bree({
       timeout: '30m',
       interval: `${process.env.WEATHER_JOB_INTERVAL || '1h'}`,
     },
+    {
+      name: 'upload_s3',
+      timeout: '30m',
+      interval: '2h',
+    },
   ],
 });
 

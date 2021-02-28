@@ -4,9 +4,12 @@ const config = {
   params: {
     a: 'param',
   },
+  awsRegion: 'ap-east-1',
+  bucketName: 'you_bucket_name',
+  fileKeyNameSurfix: 'your_s3_file_name.json',
   weatherUrl: ' ',
   weatherCitys: [
-    { en: 'beijing', cn: '北京' },
+    { code: 'beijing', en: 'beijing', cn: '北京' },
   ],
 };
 

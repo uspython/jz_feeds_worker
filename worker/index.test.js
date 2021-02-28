@@ -12,6 +12,8 @@ const {
   cityCnNameFrom,
   WeatherDefaultDate,
   randomizeArray,
+  countryFrom,
+  cityCodeFrom,
 } = require('./util/worker_helper');
 
 const JZFeedWorker = require('./index');
@@ -56,6 +58,13 @@ describe('Test City Utility', () => {
     expect(enName).toBe('wulumuqi');
   });
 
+  test("should return city's english code", () => {
+    const code = cityCodeFrom('承德');
+
+    expect(code.length).not.toBe(0);
+    expect(code).toBe('chegnde');
+  });
+
   test("should return city's chinese name", () => {
     const name = cityCnNameFrom('wulumuqi');
 
@@ -69,6 +78,16 @@ describe('Test City Utility', () => {
 
     expect(p.name).toBe('辽宁省');
     expect(p.id).toBe('210000000000');
+  });
+
+  test('should return a country', () => {
+    // 321323000000
+    const testCity = cityFrom('宿迁');
+    const country = countryFrom(testCity, '321323000000');
+
+    expect(country).not.toBeNull();
+    expect(country.id).toBe('321323000000');
+    expect(country.name).toBe('泗阳县');
   });
 });
 

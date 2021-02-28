@@ -1,4 +1,5 @@
 const { cityMap } = require('../assets/city');
+const { countyMap } = require('../assets/county');
 const { provinceObject } = require('../assets/province_object');
 const config = require('../config');
 const logger = require('../logger');
@@ -34,6 +35,22 @@ function cityFrom(cnName) {
   return null;
 }
 
+function countryFrom(city, countryId) {
+  const countries = countyMap[city.id];
+
+  if (!countries && countries.length === 0) {
+    return null;
+  }
+
+  const r = countries.find(({ id }) => id === countryId);
+
+  if (r) {
+    return r;
+  }
+
+  return null;
+}
+
 function provinceFrom(city) {
   const { province } = city;
 
@@ -46,7 +63,8 @@ function provinceFrom(city) {
 }
 
 function cityCnNameFrom(enName) {
-  const ret = config.weatherCitys.find(({ en }) => enName.indexOf(en) > -1);
+  // eslint-disable-next-line max-len
+  const ret = config.weatherCitys.find(({ en, code }) => enName.indexOf(en) > -1 || enName.indexOf(code) > -1);
 
   if (!ret) {
     return '';
@@ -65,6 +83,17 @@ function cityEnNameFrom(cnName) {
 
   const { en } = ret;
   return en;
+}
+
+function cityCodeFrom(cnName) {
+  const ret = config.weatherCitys.find(({ cn }) => cnName.indexOf(cn) > -1);
+
+  if (!ret) {
+    return '';
+  }
+
+  const { code } = ret;
+  return code;
 }
 
 // For weather api only
@@ -120,3 +149,5 @@ module.exports.provinceFrom = provinceFrom;
 module.exports.cityCnNameFrom = cityCnNameFrom;
 module.exports.wait = wait;
 module.exports.randomizeArray = randomizeArray;
+module.exports.countryFrom = countryFrom;
+module.exports.cityCodeFrom = cityCodeFrom;

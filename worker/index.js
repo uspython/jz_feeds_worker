@@ -8,7 +8,7 @@ const logger = require('./logger');
 const { addManyFeeds, Feed } = require('./util/dbhelper');
 
 const {
-  cityEnNameFrom,
+  cityCodeFrom,
   callbackFromWeather,
   provinceFrom,
   WeatherDefaultDate,
@@ -47,7 +47,7 @@ class JZFeedWorker {
         { cityId },
         null,
         { sort: { releaseDate: -1 } },
-      ).exec();
+      ).lean().exec();
 
       if (releaseDate) {
         const d = dayjs(releaseDate).add(1, 'day');
@@ -79,7 +79,7 @@ class JZFeedWorker {
         { cityId },
         {},
         { sort: { releaseDate: -1 } },
-      ).exec();
+      ).lean().exec();
 
       if (releaseDate) {
         const d = dayjs(releaseDate).add(1, 'day');
@@ -98,7 +98,7 @@ class JZFeedWorker {
     // const url = `${config.weatherUrl}`;
     const { from = '', to = '' } = params;
 
-    const cityCode = cityEnNameFrom(this.city.province + this.city.name);
+    const cityCode = cityCodeFrom(this.city.province + this.city.name);
 
     if (!cityCode || cityCode.length === 0) {
       throw new Error('City Code can not be Empty');

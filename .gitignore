@@ -3,6 +3,7 @@ worker/config/index.js
 .vscode
 .aws
 prod
+archives
 
 # Logs
 logs
