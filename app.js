@@ -70,7 +70,7 @@ const bree = new Bree({
     },
     {
       name: 'upload_s3',
-      timeout: '30m',
+      timeout: '35m',
       interval: '2h',
     },
   ],
