@@ -4,6 +4,7 @@ const {
 } = require('@aws-sdk/client-s3');
 const dayjs = require('dayjs');
 const pako = require('pako');
+const fs = require('fs');
 const _ = require('lodash');
 const config = require('../worker/config');
 const Feed = require('../worker/models/feed');
@@ -92,6 +93,25 @@ class Publisher {
     };
   }
 
+  async archiveFileFrom(utf8ArrayData) {
+    // Uint8Array
+    const data = utf8ArrayData;
+
+    const archiveDir = `./archives/${dayjs().add(8, 'hours').format('YYYY-MM-DD-HH')}`;
+
+    fs.access(archiveDir, (err) => {
+      if (err) {
+        fs.mkdirSync(archiveDir, { recursive: true });
+      }
+
+      fs.writeFile(`${archiveDir}/${this.city.enName}_${config.fileKeyNameSurfix}.gz`, data, (e) => {
+        if (!e) {
+          logger.info(`archive ${this.city.enName} successfully`);
+        }
+      });
+    });
+  }
+
   async uploadJson() {
     const jsonResults = await this.getRawJson();
 
@@ -102,12 +122,12 @@ class Publisher {
     const str = JSON.stringify(this.mapToApiFromJson(jsonResults));
     const buffer = Buffer.from(str);
     const bodyJsonGz = pako.gzip(buffer);
-    // TODO: (Jeff) Archive
+    const fileName = `${this.city.enName}_${config.fileKeyNameSurfix}`;
 
     // call S3 to retrieve upload file to specified bucket
     const uploadParams = {
       Bucket: config.bucketName,
-      Key: `${this.city.enName}_${config.fileKeyNameSurfix}`,
+      Key: fileName,
       Body: bodyJsonGz,
       ContentType: 'application/json',
       ContentEncoding: 'gzip',
@@ -115,6 +135,8 @@ class Publisher {
 
     const { ETag } = await this.s3.send(new PutObjectCommand(uploadParams));
     logger.info(`upload json success: ${this.city.province}, ${this.city.name}, etag: ${ETag}`);
+    // Archive
+    this.archiveFileFrom(bodyJsonGz);
     return 1;
   }
 }
