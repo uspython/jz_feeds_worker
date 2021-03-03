@@ -1,3 +1,4 @@
+
 const AWS = require('aws-sdk');
 const {
   S3Client, ListBucketsCommand, PutObjectCommand,
@@ -97,7 +98,7 @@ class Publisher {
     // Uint8Array
     const data = utf8ArrayData;
 
-    const archiveDir = `./archives/${dayjs().add(8, 'hours').format('YYYY-MM-DD-HH')}`;
+    const archiveDir = `../archives/${dayjs().add(8, 'hours').format('YYYY-MM-DD-HH')}`;
 
     fs.access(archiveDir, (err) => {
       if (err) {
@@ -136,7 +137,7 @@ class Publisher {
     const { ETag } = await this.s3.send(new PutObjectCommand(uploadParams));
     logger.info(`upload json success: ${this.city.province}, ${this.city.name}, etag: ${ETag}`);
     // Archive
-    this.archiveFileFrom(bodyJsonGz);
+    // this.archiveFileFrom(bodyJsonGz);
     return 1;
   }
 }

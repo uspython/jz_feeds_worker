@@ -106,7 +106,7 @@ services:
     volumes:
       - ./:/home/node/app
       - ./.aws:/home/node/.aws:ro
-      - ./archives:/home/node/app/archives
+      - ./archives:/home/node/archives
     ports:
       - "8964:3001"
     networks:

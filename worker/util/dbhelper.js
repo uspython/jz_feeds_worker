@@ -47,14 +47,14 @@ async function addManyFeeds(feeds) {
 
 async function alterFeed(theFeed) {
   const { cityId, releaseDate } = theFeed;
-  const { nModified = 0 } = await Feed.updateOne(
+  const { nModified = 0, n } = await Feed.updateOne(
     { cityId, releaseDate },
     { ...theFeed },
     // [options.upsert=false] «Boolean» if true, and no documents found, insert a new document
     { upsert: true },
   );
 
-  logger.info(`Feed Altered, ${cityId}, ${releaseDate}, ${nModified} modified`);
+  logger.info(`Feed Altered, ${cityId}, ${releaseDate}, ${n} matched, ${nModified} modified.`);
   return nModified;
 }
 

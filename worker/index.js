@@ -5,7 +5,7 @@ const utc = require('dayjs/plugin/utc');
 const config = require('./config');
 const fetch = require('./fetch');
 const logger = require('./logger');
-const { addManyFeeds, Feed } = require('./util/dbhelper');
+const { addManyFeeds, Feed, alterFeed } = require('./util/dbhelper');
 
 const {
   cityCodeFrom,
@@ -210,7 +210,18 @@ class JZFeedWorker {
       return 0;
     }
 
-    const count = await addManyFeeds(feeds);
+    let count = 0;
+    if (this.scheduleType === 'day') {
+      for (let idx = 0; idx < feeds.length; idx += 1) {
+        const feed = feeds[idx];
+
+        // eslint-disable-next-line no-await-in-loop
+        count = await alterFeed(feed);
+      }
+    } else {
+      count = await addManyFeeds(feeds);
+    }
+
     logger.info(`\
 [Worker]: Worker invoked, \
 city: ${this.city.name} \

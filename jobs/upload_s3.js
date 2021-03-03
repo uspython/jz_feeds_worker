@@ -13,9 +13,12 @@ async function doneWithCity(cityName) {
 
   const theCity = cityFrom(cityName, s3bucket);
   logger.info(`[UploadS3] start Publisher...${theCity.province}, ${theCity.name}`);
-  const p = new Publisher(theCity);
+  let p = new Publisher(theCity);
   const r = await p.uploadJson();
   logger.info(`[UploadS3] ${cityName}, status ${r}`);
+
+  p = null;
+  return 0;
 }
 
 async function start() {
