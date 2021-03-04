@@ -25,10 +25,10 @@ async function start() {
       // eslint-disable-next-line no-await-in-loop
       await doneWithCity(cn);
     }
+
+    await disconnect();
   } catch (err) {
     logger.error({ err });
-  } finally {
-    disconnect();
   }
 }
 

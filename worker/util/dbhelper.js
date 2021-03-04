@@ -22,11 +22,10 @@ async function connect() {
   });
 }
 
-function disconnect() {
-  mongoose.disconnect().then(() => {
-    // we're connected!
-    logger.info('Database Disonnected!');
-  });
+async function disconnect() {
+  await mongoose.disconnect();
+  // we're connected!
+  logger.info('Database Disonnected!');
 }
 
 function addOneFeed(theFeed) {

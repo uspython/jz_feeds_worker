@@ -18,7 +18,7 @@ describe('Test AWS Publisher', () => {
   afterAll(() => {
     setTimeout(() => {
       disconnect();
-    }, 500);
+    }, 800);
   });
 
   const testCity = cityFrom('包头');

@@ -1,4 +1,3 @@
-
 const AWS = require('aws-sdk');
 const {
   S3Client, ListBucketsCommand, PutObjectCommand,
@@ -135,6 +134,10 @@ class Publisher {
     };
 
     const { ETag } = await this.s3.send(new PutObjectCommand(uploadParams));
+
+    this.s3.destroy();
+    this.s3 = null;
+
     logger.info(`upload json success: ${this.city.province}, ${this.city.name}, etag: ${ETag}`);
     // Archive
     // this.archiveFileFrom(bodyJsonGz);
