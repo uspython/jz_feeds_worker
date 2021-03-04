@@ -61,7 +61,7 @@ app.listen(port, () => {
 });
 
 const bree = new Bree({
-  // logger: new Cabin(),
+  //logger: new Cabin(),
   jobs: [
     {
       name: 'weather',
@@ -70,8 +70,8 @@ const bree = new Bree({
     },
     {
       name: 'upload_s3',
-      timeout: '15m',
-      interval: '2h',
+      timeout: '5m',
+      interval: '1h',
     },
   ],
 });

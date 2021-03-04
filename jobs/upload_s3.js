@@ -30,6 +30,7 @@ async function doneWithCity(cityName) {
     }
 
     await disconnect();
+    process.exit(0);
   } catch (err) {
     logger.error({ err });
   }
