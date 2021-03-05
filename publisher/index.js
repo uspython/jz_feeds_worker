@@ -1,4 +1,3 @@
-const crypto = require('crypto');
 const AWS = require('aws-sdk');
 const {
   S3Client, ListBucketsCommand, PutObjectCommand,
@@ -54,7 +53,8 @@ class Publisher {
         _id: 0,
         createdAt: 0,
         updatedAt: 0,
-        cityId: 0
+        cityId: 0,
+        pollenCount: 0,
       })
       .lean()
       .exec();
@@ -120,9 +120,6 @@ class Publisher {
     }
 
     const str = JSON.stringify(this.mapToApiFromJson(jsonResults));
-    //TODO: (Jeff) md5 here
-    // const hash = crypto.createHash('md5').update(str).digest('hex');
-    // const hashString = Buffer.from(hash).toString('base64');
     const buffer = Buffer.from(str, 'utf8');
     const bodyJsonGz = pako.gzip(buffer);
     const fileName = `${this.city.enName}_${config.fileKeyNameSurfix}`;
@@ -134,7 +131,6 @@ class Publisher {
       Body: bodyJsonGz,
       ContentType: 'application/json',
       ContentEncoding: 'gzip',
-      //ContentMD5: `${hash}`,
     };
 
     const { ETag } = await this.s3.send(new PutObjectCommand(uploadParams));

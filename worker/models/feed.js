@@ -12,6 +12,7 @@ const FeedSchema = new Schema({
   pollenCount: String,
   forecastDate: Date,
   forecastCount: String,
+  marsPollenCount: String,
 }, {
   timestamps: {
     createdAt: 'createdAt',

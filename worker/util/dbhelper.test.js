@@ -25,6 +25,7 @@ describe('Test dbhelper', () => {
       },
       releaseDate: dayjs('2020-11-11').startOf('day').valueOf(),
       pollenCount: '1',
+      marsPollenCount: '0',
       forecastDate: dayjs('2020-11-11').add(1, 'day').startOf('day').valueOf(),
       forecastCount: '500 - 800',
     };
@@ -56,6 +57,7 @@ describe('Test dbhelper', () => {
         },
         releaseDate: dayjs('2020-11-11').startOf('day').valueOf(),
         pollenCount: '4',
+        marsPollenCount: '6',
         forecastDate: dayjs('2020-11-11').add(1, 'day').startOf('day').valueOf(),
         forecastCount: '500 - 800',
       };
@@ -67,7 +69,7 @@ describe('Test dbhelper', () => {
           const results = await queryCityFeeds(newFeed);
 
           const [{
-            cityId, releaseDate, forecastDate, pollenCount,
+            cityId, releaseDate, forecastDate, pollenCount, marsPollenCount,
           }] = results;
 
           expect(results.length).not.toBe(0);
@@ -75,6 +77,7 @@ describe('Test dbhelper', () => {
           expect(releaseDate.valueOf()).toBe(dayjs('2020-11-11').startOf('day').valueOf());
           expect(forecastDate.valueOf()).toBe(dayjs('2020-11-11').add(1, 'day').startOf('day').valueOf());
           expect(pollenCount).toBe('4');
+          expect(marsPollenCount).toBe('6');
 
           done();
         } catch (error) {

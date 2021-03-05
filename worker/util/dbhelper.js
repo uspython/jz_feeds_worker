@@ -3,6 +3,20 @@ const logger = require('../logger');
 
 const Feed = require('../models/feed');
 
+function addMarsValue(countStr) {
+  let ret = parseInt(countStr, 10) || 0;
+
+  if (ret === 0) {
+    return `${Math.floor(Math.random() * 2)}`;
+  }
+
+  const errValue = 5;
+  const r = Math.floor(Math.random() * errValue);
+  ret += r > 2 ? (r - errValue) : r;
+
+  return `${ret <= 0 ? 0 : ret}`;
+}
+
 async function connect() {
   await mongoose.connect(`${process.env.MONGO_URL}`, {
     useNewUrlParser: true,
@@ -45,10 +59,13 @@ async function addManyFeeds(feeds) {
 }
 
 async function alterFeed(theFeed) {
-  const { cityId, releaseDate } = theFeed;
+  const { cityId, releaseDate, pollenCount } = theFeed;
   const { nModified = 0, n } = await Feed.updateOne(
     { cityId, releaseDate },
-    { ...theFeed },
+    {
+      marsPollenCount: addMarsValue(pollenCount),
+      ...theFeed,
+    },
     // [options.upsert=false] «Boolean» if true, and no documents found, insert a new document
     { upsert: true },
   );
@@ -97,3 +114,4 @@ module.exports.deleteFeed = deleteFeed;
 module.exports.disconnect = disconnect;
 module.exports.queryCityFeeds = queryCityFeeds;
 module.exports.Feed = Feed;
+module.exports.addMarsValue = addMarsValue;
