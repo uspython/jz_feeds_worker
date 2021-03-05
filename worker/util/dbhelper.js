@@ -43,7 +43,12 @@ async function disconnect() {
 }
 
 function addOneFeed(theFeed) {
-  Feed.create(theFeed, (err) => {
+  const { pollenCount } = theFeed;
+
+  Feed.create({
+    marsPollenCount: addMarsValue(pollenCount),
+    ...theFeed,
+  }, (err) => {
     if (err) {
       logger.warn(err);
       return;
