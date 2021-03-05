@@ -54,7 +54,7 @@ class Publisher {
         _id: 0,
         createdAt: 0,
         updatedAt: 0,
-        cityId: 0,
+        cityId: 0
       })
       .lean()
       .exec();
@@ -88,7 +88,6 @@ class Publisher {
       success: true,
       message: '',
       data: {
-        timestamp: dayjs().valueOf(),
         pollen_data: pollenData,
       },
     };
@@ -124,7 +123,7 @@ class Publisher {
     //TODO: (Jeff) md5 here
     // const hash = crypto.createHash('md5').update(str).digest('hex');
     // const hashString = Buffer.from(hash).toString('base64');
-    const buffer = Buffer.from(str);
+    const buffer = Buffer.from(str, 'utf8');
     const bodyJsonGz = pako.gzip(buffer);
     const fileName = `${this.city.enName}_${config.fileKeyNameSurfix}`;
 
