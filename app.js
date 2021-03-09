@@ -12,12 +12,9 @@ const Graceful = require('@ladjs/graceful');
 const Bree = require('bree');
 
 // // required
-// const Bree = require('bree');
 const usersRouter = require('./routes/users');
 const indexRouter = require('./routes/index');
 const logger = require('./worker/logger');
-
-// const fetch = require('./worker/fetch');
 
 const app = express();
 const port = 3001;
