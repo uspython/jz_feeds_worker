@@ -14,7 +14,10 @@ const {
   randomizeArray,
   countryFrom,
   cityCodeFrom,
+  searchFromCountry,
+  regionFrom,
 } = require('./util/worker_helper');
+const config = require('./config');
 
 const JZFeedWorker = require('./index');
 
@@ -89,6 +92,78 @@ describe('Test City Utility', () => {
     expect(country.id).toBe('321323000000');
     expect(country.name).toBe('泗阳县');
   });
+
+  test('should search country from CountryMap', () => {
+    const country = searchFromCountry('乌兰浩特');
+    expect(country).not.toBeNull();
+    expect(country.city).toBe('兴安盟');
+  });
+
+  test('should get region with city name', () => {
+    const { province, city, country } = regionFrom('宿迁');
+    const testCity = cityFrom('宿迁');
+    const testProvince = provinceFrom(testCity);
+
+    expect(province).not.toBeNull();
+    expect(city).not.toBeNull();
+    expect(country).not.toBeNull();
+
+    expect(country.id).toBe(testCity.id);
+    expect(city.name).toBe(testCity.name);
+    expect(city.id).toBe(testCity.id);
+    expect(province.name).toBe(testProvince.name);
+    expect(province.id).toBe(testProvince.id);
+  });
+
+  test('should get region with country name 1', () => {
+    const { province, city, country } = regionFrom('乌兰浩特');
+
+    expect(province).not.toBeNull();
+    expect(city).not.toBeNull();
+    expect(country).not.toBeNull();
+
+    expect(country.id).toBe('152201000000');
+    expect(country.city).toBe('兴安盟');
+    expect(city.name).toBe('兴安盟');
+    expect(province.id).toBe('150000000000');
+  });
+
+  test('should get region with country name 2', () => {
+    const { province, city, country } = regionFrom('泗阳');
+
+    const testCity = cityFrom('宿迁');
+    const testProvince = provinceFrom(testCity);
+
+    expect(province).not.toBeNull();
+    expect(city).not.toBeNull();
+    expect(country).not.toBeNull();
+
+    expect(country.id).toBe('321323000000');
+    expect(city.name).toBe(testCity.name);
+    expect(city.id).toBe(testCity.id);
+    expect(province.name).toBe(testProvince.name);
+    expect(province.id).toBe(testProvince.id);
+  });
+
+  test('should reture all region objectid', () => {
+    const regionObjects = [];
+    for (let idx = 0; idx < config.weatherCitys.length; idx += 1) {
+      const { cn } = config.weatherCitys[idx];
+      const r = regionFrom(cn);
+
+      regionObjects.push(r);
+    }
+
+    expect(regionObjects.length).toBe(config.weatherCitys.length);
+
+    for (let index = 0; index < regionObjects.length; index += 1) {
+      const { province, city, country } = regionObjects[index];
+
+      expect(province).not.toBeNull();
+      expect(city).not.toBeNull();
+      expect(country).not.toBeNull();
+    }
+  });
 });
 
 describe('Test JZFeedWorker', () => {
@@ -101,9 +176,9 @@ describe('Test JZFeedWorker', () => {
       disconnect();
     }, 500);
   });
-  test(`should get initial date range: ${WeatherDefaultDate}/2020-02-28`, async () => {
-    const city = cityFrom('肇庆');
-    const w = new JZFeedWorker(city);
+  test(`should get initial date range: ${WeatherDefaultDate}/`, async () => {
+    const region = regionFrom('肇庆');
+    const w = new JZFeedWorker(region);
     const { from, to } = await w.getMonthRange();
     expect(from).toBe(WeatherDefaultDate);
     expect(to).toBe(dayjs(WeatherDefaultDate).endOf('month').format('YYYY-MM-DD'));
@@ -111,7 +186,7 @@ describe('Test JZFeedWorker', () => {
 
   test('should get test month range: 2020-11-11/2020-11-12', () => {
     expect(async () => {
-      const jieyang = cityFrom('揭阳');
+      const jieyang = regionFrom('揭阳');
       const w = new JZFeedWorker(jieyang);
       const { from, to } = await w.getMonthRange();
       expect(from).toBe('2020-11-12');
@@ -120,31 +195,33 @@ describe('Test JZFeedWorker', () => {
   });
 
   test('month range should before (NOW + 1Day)', async () => {
-    const testCity = cityFrom('三门峡');
+    const testRegion = regionFrom('烟台');
     const today = dayjs().startOf('day').add(8, 'hours');
 
     const newFeed = {
-      cityId: testCity.id,
+      cityId: testRegion.city.id,
       region: {
-        provinceId: '11010010101',
-        countryId: '11010010103',
+        provinceId: testRegion.province.id,
+        countryId: testRegion.country.id,
       },
       releaseDate: today.valueOf(),
-      pollenCount: '400',
+      pollenCount: '488',
+      marsPollenCount: '88',
       forecastDate: today.add(1, 'day').valueOf(),
       forecastCount: '500 - 800',
     };
 
-    await alterFeed(newFeed);
-
-    const w = new JZFeedWorker(testCity);
+    const count = await alterFeed(newFeed);
+    const w = new JZFeedWorker(testRegion);
     const { from, to } = await w.getMonthRange();
+
+    expect(count).toBeGreaterThanOrEqual(1);
     expect(from).toBe(today.add(1, 'day').format('YYYY-MM-DD'));
     expect(to).toBe(today.add(1, 'day').format('YYYY-MM-DD'));
   });
 
   test('should get test date: 2020-11-12', async () => {
-    const jieyang = cityFrom('揭阳');
+    const jieyang = regionFrom('揭阳');
     const w = new JZFeedWorker(jieyang);
     const { from, to } = await w.getNextDayRange();
     expect(from).toBe('2020-11-12');
@@ -152,7 +229,7 @@ describe('Test JZFeedWorker', () => {
   });
 
   test('fetch weather api should return raw data', async () => {
-    const testCity = cityFrom('北京');
+    const testCity = regionFrom('北京');
     const w = new JZFeedWorker(testCity);
     const nextDay = await w.getNextDayRange();
     const rawData = await w.fetchRawDataFromWeather({
@@ -175,8 +252,8 @@ describe('Test JZFeedWorker', () => {
       content: '敏感人群减少外出，外出需防护。',
     }];
 
-    const testCity = cityFrom('北京');
-    const w = new JZFeedWorker(testCity);
+    const testRegion = regionFrom('北京');
+    const w = new JZFeedWorker(testRegion);
     const feeds = w.feedsFromWeatherRaw(mockData);
 
     expect(feeds.length).not.toBe(0);
@@ -184,9 +261,9 @@ describe('Test JZFeedWorker', () => {
     const [{
       cityId, pollenCount, releaseDate, region,
     }] = feeds;
-    expect(cityId).toBe(testCity.id);
+    expect(cityId).toBe(testRegion.city.id);
     expect(releaseDate).toBe(dayjs('2020-03-11').startOf('day').add(8, 'hours').valueOf());
-    expect(region.provinceId).toBe(provinceFrom(testCity).id);
+    expect(region.provinceId).toBe(testRegion.province.id);
     expect(pollenCount).toBe('202');
   });
 

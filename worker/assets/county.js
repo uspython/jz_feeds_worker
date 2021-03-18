@@ -1,7 +1,7 @@
 /* eslint-disable quote-props */
 /* eslint-disable camelcase */
 /* eslint-disable prefer-const */
-const countyMap = {
+const CountryMap = {
   "110100000000": [
     {
       "city": "市辖区",
@@ -17093,4 +17093,4 @@ const countyMap = {
     }
   ]
 }
-module.exports = { countyMap } 
+module.exports = { CountryMap } 

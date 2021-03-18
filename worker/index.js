@@ -10,7 +10,6 @@ const { addManyFeeds, Feed, alterFeed } = require('./util/dbhelper');
 const {
   cityCodeFrom,
   callbackFromWeather,
-  provinceFrom,
   WeatherDefaultDate,
 } = require('./util/worker_helper');
 
@@ -21,16 +20,16 @@ const DateFormatString = 'YYYY-MM-DD';
 
 class JZFeedWorker {
   /**
-   * @param {aCity} city Object
+   * @param {aRegion} Region Object
    * @param {scheduleType} scheduleType 'day' | 'month'
    */
-  constructor(aCity, scheduleType) {
-    this.city = aCity;
+  constructor(aRegion, scheduleType) {
+    this.region = aRegion;
     this.scheduleType = scheduleType || 'day';
   }
 
   async getNextDayRange() {
-    const { id } = this.city;
+    const { city: { id } } = this.region;
     const cityId = id;
 
     if (!cityId) {
@@ -59,7 +58,7 @@ class JZFeedWorker {
   }
 
   async getMonthRange() {
-    const { id } = this.city;
+    const { city: { id } } = this.region;
     const cityId = id;
 
     if (!cityId) {
@@ -98,7 +97,7 @@ class JZFeedWorker {
     // const url = `${config.weatherUrl}`;
     const { from = '', to = '' } = params;
 
-    const cityCode = cityCodeFrom(this.city.province + this.city.name);
+    const cityCode = cityCodeFrom(this.region.province.name + this.region.city.name);
 
     if (!cityCode || cityCode.length === 0) {
       throw new Error('City Code can not be Empty');
@@ -174,10 +173,10 @@ class JZFeedWorker {
         const { addTime, num } = d;
         const addDate = dayjs(addTime).startOf('day').add(8, 'hours'); // GMT+8 beijing
         const feed = {
-          cityId: this.city.id,
+          cityId: this.region.city.id,
           region: {
-            provinceId: provinceFrom(this.city).id,
-            countryId: this.city.id,
+            provinceId: this.region.province.id,
+            countryId: this.region.country.id,
           },
           releaseDate: addDate.valueOf(),
           pollenCount: `${num}`,
@@ -224,7 +223,7 @@ class JZFeedWorker {
 
     logger.info(`\
 [Worker]: Worker invoked, \
-city: ${this.city.name} \
+city: ${this.region.city.name}, ${this.region.country.name} \
 date: ${dateRange.from} ${dateRange.to} \
 type: ${this.scheduleType} \
 count: ${count}`);

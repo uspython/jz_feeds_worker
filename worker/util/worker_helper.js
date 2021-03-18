@@ -1,11 +1,11 @@
 const { cityMap } = require('../assets/city');
-const { countyMap } = require('../assets/county');
+const { CountryMap } = require('../assets/county');
 const { provinceObject } = require('../assets/province_object');
 const config = require('../config');
 const logger = require('../logger');
 
 // Start Date
-const WeatherDefaultDate = '2020-03-01';
+const WeatherDefaultDate = '2021-03-01';
 
 const wait = (ms) => new Promise((res) => setTimeout(res, ms));
 
@@ -28,15 +28,57 @@ function cityFrom(cnName) {
     .reduce((p, c) => p.concat(c), [])
     .filter((c) => c.province.indexOf(cnName) > -1 || c.name.indexOf(cnName) > -1);
 
-  if (citys.length !== 0) {
+  if (citys.length === 1) {
     return citys[0];
   }
 
   return null;
 }
 
+function cityFromCityId(cityId) {
+  const citys = Object.values(cityMap)
+    .reduce((p, c) => p.concat(c), [])
+    .filter((c) => c.id === cityId);
+
+  if (citys.length === 1) {
+    return citys[0];
+  }
+
+  return null;
+}
+
+function cityFromCountryId(countryId) {
+  let ret = null;
+
+  for (let index = 0; index < Object.keys(CountryMap).length; index += 1) {
+    const cityId = Object.keys(CountryMap)[index];
+
+    const countries = CountryMap[cityId];
+    const isExisted = countries.findIndex((c) => (c.id === countryId)) > -1;
+
+    if (isExisted) {
+      ret = cityFromCityId(cityId);
+      break;
+    }
+  }
+
+  return ret;
+}
+
+function searchFromCountry(cnName) {
+  const countries = Object.values(CountryMap)
+    .reduce((p, c) => p.concat(c), [])
+    .filter((c) => c.city.indexOf(cnName) > -1 || c.name.indexOf(cnName) > -1);
+
+  if (countries.length === 1) {
+    return countries[0];
+  }
+
+  return null;
+}
+
 function countryFrom(city, countryId) {
-  const countries = countyMap[city.id];
+  const countries = CountryMap[city.id];
 
   if (!countries && countries.length === 0) {
     return null;
@@ -60,6 +102,26 @@ function provinceFrom(city) {
   if (!p) return null;
 
   return p;
+}
+
+function regionFrom(cnName) {
+  let city = cityFrom(cnName);
+  let country = null;
+
+  if (!city) {
+    // Search from Country
+    country = searchFromCountry(cnName);
+    if (!country) return null;
+
+    city = cityFromCountryId(country.id);
+  }
+
+  if (!city) {
+    throw new Error(`Couldn't find city ${cnName}`);
+  }
+
+  const province = provinceFrom(city);
+  return { city, province, country: !country ? city : country };
 }
 
 function cityCnNameFrom(enName) {
@@ -151,3 +213,5 @@ module.exports.wait = wait;
 module.exports.randomizeArray = randomizeArray;
 module.exports.countryFrom = countryFrom;
 module.exports.cityCodeFrom = cityCodeFrom;
+module.exports.searchFromCountry = searchFromCountry;
+module.exports.regionFrom = regionFrom;
