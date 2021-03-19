@@ -59,7 +59,14 @@ function addOneFeed(theFeed) {
 }
 
 async function addManyFeeds(feeds) {
-  const d = await Feed.insertMany(feeds);
+  const mars = [...feeds].map((feed) => {
+    const { pollenCount } = feed;
+    return {
+      marsPollenCount: addMarsValue(pollenCount),
+      ...feed,
+    };
+  });
+  const d = await Feed.insertMany(mars);
   return d.length;
 }
 

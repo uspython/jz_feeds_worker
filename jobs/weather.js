@@ -10,7 +10,7 @@ async function doneWithCity(cityName) {
   const theRegion = regionFrom(cityName);
 
   logger.info(`[Weather] start fetching...${theRegion.province.name}, ${theRegion.city.name}, ${theRegion.country.name}`);
-  const w = new JZFeedWorker(theRegion, 'month');
+  const w = new JZFeedWorker(theRegion, 'day');
   const r = await w.invoke();
   logger.info(`[Weather] ${cityName}, ${r} added`);
 }
