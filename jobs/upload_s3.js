@@ -1,7 +1,7 @@
 const Publisher = require('../publisher');
 const config = require('../worker/config');
 const logger = require('../worker/logger');
-const { cityFrom } = require('../worker/util/worker_helper');
+const { regionFrom } = require('../worker/util/worker_helper');
 const { connect, disconnect } = require('../worker/util/dbhelper');
 
 const s3bucket = {
@@ -9,9 +9,11 @@ const s3bucket = {
 };
 
 async function doneWithCity(cityName) {
-  const theCity = cityFrom(cityName, s3bucket);
-  logger.info(`[UploadS3] start Publisher...${theCity.province}, ${theCity.name}`);
-  let p = new Publisher(theCity);
+  const theRegion = regionFrom(cityName);
+
+  const { province, city, country: { name: countryName = '' } = { name: '' } } = theRegion;
+  logger.info(`[UploadS3] start Publisher...${province.name}, ${city.name}, ${countryName || ''}`);
+  let p = new Publisher(theRegion, s3bucket);
   const r = await p.uploadJson();
   logger.info(`[UploadS3] ${cityName}, status ${r}`);
 

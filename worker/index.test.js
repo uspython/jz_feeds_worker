@@ -6,14 +6,14 @@ const {
 } = require('./util/dbhelper');
 const {
   cityFrom,
-  cityEnNameFrom,
+  getEnNameWith,
   callbackFromWeather,
   provinceFrom,
   cityCnNameFrom,
   WeatherDefaultDate,
   randomizeArray,
   countryFrom,
-  cityCodeFrom,
+  getCityCodeWith,
   searchFromCountry,
   regionFrom,
 } = require('./util/worker_helper');
@@ -55,14 +55,14 @@ describe('Test City Utility', () => {
   });
 
   test("should return city's english name", () => {
-    const enName = cityEnNameFrom('乌鲁木齐');
+    const enName = getEnNameWith('乌鲁木齐');
 
     expect(enName.length).not.toBe(0);
     expect(enName).toBe('wulumuqi');
   });
 
   test("should return city's english code", () => {
-    const code = cityCodeFrom('承德');
+    const code = getCityCodeWith('承德');
 
     expect(code.length).not.toBe(0);
     expect(code).toBe('chegnde');

@@ -136,7 +136,7 @@ function cityCnNameFrom(enName) {
   return cn;
 }
 
-function cityEnNameFrom(cnName) {
+function getEnNameWith(cnName) {
   const ret = config.weatherCitys.find(({ cn }) => cnName.indexOf(cn) > -1);
 
   if (!ret) {
@@ -147,7 +147,7 @@ function cityEnNameFrom(cnName) {
   return en;
 }
 
-function cityCodeFrom(cnName) {
+function getCityCodeWith(cnName) {
   const ret = config.weatherCitys.find(({ cn }) => cnName.indexOf(cn) > -1);
 
   if (!ret) {
@@ -203,7 +203,7 @@ function randomizeArray(original) {
 }
 
 module.exports.cityFrom = cityFrom;
-module.exports.cityEnNameFrom = cityEnNameFrom;
+module.exports.getEnNameWith = getEnNameWith;
 module.exports.callbackFromWeather = callbackFromWeather;
 module.exports.callWithRetry = callWithRetry;
 module.exports.WeatherDefaultDate = WeatherDefaultDate;
@@ -212,6 +212,6 @@ module.exports.cityCnNameFrom = cityCnNameFrom;
 module.exports.wait = wait;
 module.exports.randomizeArray = randomizeArray;
 module.exports.countryFrom = countryFrom;
-module.exports.cityCodeFrom = cityCodeFrom;
+module.exports.getCityCodeWith = getCityCodeWith;
 module.exports.searchFromCountry = searchFromCountry;
 module.exports.regionFrom = regionFrom;

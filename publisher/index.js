@@ -9,9 +9,7 @@ const _ = require('lodash');
 const config = require('../worker/config');
 const Feed = require('../worker/models/feed');
 const logger = require('../worker/logger');
-const {
-  cityEnNameFrom, provinceFrom, countryFrom,
-} = require('../worker/util/worker_helper');
+const { getEnNameWith } = require('../worker/util/worker_helper');
 
 const credentials = new AWS.SharedIniFileCredentials({ profile: 'default' });
 const myConfig = new AWS.Config({
@@ -22,14 +20,19 @@ AWS.config.update(myConfig);
 
 class Publisher {
   /**
-   * @param {aCity} city Object
+   * @param {aRegion} Region Object
    * @param {bucket} bucket s3 bucket
    */
-  constructor(city, bucket) {
+  constructor(aRegion, bucket) {
     this.bucket = bucket || { name: config.bucketName };
-    this.city = city || { id: '', name: 'unknow city name' };
-    const enName = cityEnNameFrom(this.city.province + this.city.name);
-    this.city.enName = enName;
+
+    this.region = aRegion;
+    const {
+      province, city,
+      country: { name: countryName = '' } = { country: { name: '' } },
+    } = this.region;
+    const enName = getEnNameWith(`${province.name}${city.name}${countryName || ''}`);
+    this.region.alias = enName;
     // Create S3 service object
     this.s3 = new S3Client({ region: config.awsRegion });
   }
@@ -42,7 +45,7 @@ class Publisher {
   async getRawJson() {
     const results = await Feed.find(
       {
-        cityId: this.city.id,
+        cityId: this.region.city.id,
         releaseDate: { $gte: dayjs().add(-6, 'day').startOf('day').add(8, 'hours') },
       },
       null,
@@ -72,15 +75,15 @@ class Publisher {
  */
   mapToApiFromJson(json) {
     const groupByRegion = _.groupBy(json, 'region.countryId');
+    const { province, city, country } = this.region;
 
-    // TODO: (Jeff) set countryId here
     const pollenData = Object.keys(groupByRegion)
       .map((countryId) => ({
         latest: groupByRegion[countryId],
         region: {
-          province: provinceFrom(this.city),
-          city: this.city,
-          country: countryFrom(this.city, this.city.id),
+          province,
+          city,
+          country,
         },
       }));
 
@@ -104,9 +107,9 @@ class Publisher {
         fs.mkdirSync(archiveDir, { recursive: true });
       }
 
-      fs.writeFile(`${archiveDir}/${this.city.enName}_${config.fileKeyNameSurfix}.gz`, data, (e) => {
+      fs.writeFile(`${archiveDir}/${this.region.alias}_${config.fileKeyNameSurfix}.gz`, data, (e) => {
         if (!e) {
-          logger.info(`archive ${this.city.enName} successfully`);
+          logger.info(`archive ${this.region.alias} successfully`);
         }
       });
     });
@@ -116,13 +119,13 @@ class Publisher {
     const jsonResults = await this.getRawJson();
 
     if (jsonResults.length === 0) {
-      throw new Error(`${this.city.name} have not content in last 7 days.`);
+      throw new Error(`${this.region.city.name} have not content in last 7 days.`);
     }
 
     const str = JSON.stringify(this.mapToApiFromJson(jsonResults));
     const buffer = Buffer.from(str, 'utf8');
     const bodyJsonGz = pako.gzip(buffer);
-    const fileName = `${this.city.enName}_${config.fileKeyNameSurfix}`;
+    const fileName = `${this.region.alias}_${config.fileKeyNameSurfix}`;
 
     // call S3 to retrieve upload file to specified bucket
     const uploadParams = {
@@ -140,7 +143,7 @@ class Publisher {
     this.s3.destroy();
     this.s3 = null;
 
-    logger.info(`upload json success: ${this.city.province}, ${this.city.name}, etag: ${ETag}`);
+    logger.info(`upload json success: ${this.region.province.name}, ${this.region.city.name}, etag: ${ETag}`);
     // Archive
     // this.archiveFileFrom(bodyJsonGz);
     return 1;

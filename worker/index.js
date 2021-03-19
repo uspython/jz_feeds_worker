@@ -8,7 +8,7 @@ const logger = require('./logger');
 const { addManyFeeds, Feed, alterFeed } = require('./util/dbhelper');
 
 const {
-  cityCodeFrom,
+  getCityCodeWith,
   callbackFromWeather,
   WeatherDefaultDate,
 } = require('./util/worker_helper');
@@ -72,7 +72,13 @@ class JZFeedWorker {
     if (!isExisted) {
       // From 2020-03-01
       const fromDate = dayjs(from, DateFormatString);
-      to = fromDate.endOf('month').format(DateFormatString);
+
+      const today = dayjs().startOf('day');
+      const endOfMonth = fromDate.endOf('month');
+
+      to = endOfMonth.isAfter(today)
+        ? today.format(DateFormatString)
+        : endOfMonth.startOf('day').format(DateFormatString);
     } else {
       const { releaseDate } = await Feed.findOne(
         { cityId },
@@ -97,7 +103,8 @@ class JZFeedWorker {
     // const url = `${config.weatherUrl}`;
     const { from = '', to = '' } = params;
 
-    const cityCode = cityCodeFrom(this.region.province.name + this.region.city.name);
+    const { province, city, country } = this.region;
+    const cityCode = getCityCodeWith(province.name + city.name + country.name);
 
     if (!cityCode || cityCode.length === 0) {
       throw new Error('City Code can not be Empty');
@@ -195,12 +202,14 @@ class JZFeedWorker {
       ? this.getMonthRange()
       : this.getNextDayRange();
     const dateRange = await dateRangePromise;
+
+    logger.info(`[Worker]: DateRange: ${dateRange.from} ${dateRange.to}`);
     // Guard Tomorrow
     const tomorrow = dayjs().add(1, 'day').startOf('day');
     if (dayjs(dateRange.to, DateFormatString).isSameOrAfter(tomorrow)) {
+      logger.info('[Worker]: Wrong DateRange');
       return 0;
     }
-    logger.info(`[Worker]: DateRange: ${dateRange.from} ${dateRange.to}`);
     const rawData = await this.fetchRawDataFromWeather(dateRange);
     const feeds = this.feedsFromWeatherRaw(rawData);
 
