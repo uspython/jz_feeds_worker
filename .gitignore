@@ -1,5 +1,6 @@
 docker-compose.yaml
 worker/config/index.js
+worker/region_worker
 .vscode
 .aws
 prod

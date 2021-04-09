@@ -11,6 +11,14 @@ const config = {
   weatherCitys: [
     { code: 'beijing', en: 'beijing', cn: '北京' },
   ],
+  specificRegions: [
+    {
+      code: 'sanhanqu',
+      en: 'sanhanqu',
+      cn: '赛罕区',
+      url: 'https://google.com',
+    },
+  ],
 };
 
 export default config;
