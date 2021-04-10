@@ -13,8 +13,8 @@ const config = {
   ],
   specificRegions: [
     {
-      code: 'sanhanqu',
-      en: 'sanhanqu',
+      code: 'saihanqu',
+      en: 'saihanqu',
       cn: '赛罕区',
       url: 'https://google.com',
     },
