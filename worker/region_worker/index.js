@@ -31,7 +31,7 @@ class JZHuhehaoteWorker {
   }
 
   async getNextDayRange() {
-    const { city: { id } } = this.region;
+    const { city: { id }, province: { id: provinceId }, country: { id: countryId } } = this.region;
     const cityId = id;
 
     if (!cityId) {
@@ -39,13 +39,13 @@ class JZHuhehaoteWorker {
     }
 
     let nextDay = WeatherDefaultDate;
-    const isExisted = await Feed.exists({ cityId });
+    const isExisted = await Feed.exists({ cityId, region: { provinceId, countryId } });
 
     if (!isExisted) {
       // From 2020-03-01
     } else {
       const { releaseDate } = await Feed.findOne(
-        { cityId },
+        { cityId, region: { provinceId, countryId } },
         null,
         { sort: { releaseDate: -1 } },
       ).lean().exec();
