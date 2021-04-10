@@ -143,7 +143,8 @@ class Publisher {
     const jsonResults = await this.getRawJson();
 
     if (jsonResults.length === 0) {
-      throw new Error(`${this.region.city.name} have not content in last 7 days.`);
+      logger.info(`${this.region.city.name} have not content in last 7 days.`);
+      return 0;
     }
 
     const str = JSON.stringify(this.mapToApiFromJson(jsonResults));
@@ -177,7 +178,7 @@ class Publisher {
     const jsonResults = await this.getMockRawJson();
 
     if (jsonResults.length === 0) {
-      throw new Error(`${this.region.city.name} have not content in last 7 days.`);
+      throw new Error(`${this.region.city.name} have not content in last 3 months.`);
     }
 
     const str = JSON.stringify(this.mapToApiFromJson(jsonResults));
