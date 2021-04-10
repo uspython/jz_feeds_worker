@@ -31,14 +31,14 @@ describe('Test AWS Publisher', () => {
   });
 
   test('should get pollen json in latest 7 days', async () => {
-    const j = await publisher.getRawJson();
+    const j = await publisher.getMockRawJson();
 
     expect(j.length).not.toBe(0);
   });
 
   test("should upload city's json file to s3 with gzip", async () => {
     const run = async () => {
-      const status = await publisher.uploadJson();
+      const status = await publisher.uploadMockJson();
       expect(status).not.toBe(0);
     };
 

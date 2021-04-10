@@ -183,6 +183,26 @@ function callbackFromWeather(resp) {
   return null;
 }
 
+// For weather api only
+// eslint-disable-next-line max-len
+// resp:[{
+//    "skDate" :"2021-04-02",
+//    "skSouth" :"68",
+//    "skNorth" :"21"
+// }, {
+//    "skDate" :"2021-04-03",
+//    "skSouth" :"45",
+//    "skNorth" :"35"
+// }]
+function callbackHuhehaote(resp) {
+  try {
+    const ret = JSON.parse(`${resp}`);
+    return ret;
+  } catch (err) {
+    return resp;
+  }
+}
+
 function randomizeArray(original) {
   if (original.length === 0) {
     return [];
@@ -204,7 +224,6 @@ function randomizeArray(original) {
 
 module.exports.cityFrom = cityFrom;
 module.exports.getEnNameWith = getEnNameWith;
-module.exports.callbackFromWeather = callbackFromWeather;
 module.exports.callWithRetry = callWithRetry;
 module.exports.WeatherDefaultDate = WeatherDefaultDate;
 module.exports.provinceFrom = provinceFrom;
@@ -215,3 +234,6 @@ module.exports.countryFrom = countryFrom;
 module.exports.getCityCodeWith = getCityCodeWith;
 module.exports.searchFromCountry = searchFromCountry;
 module.exports.regionFrom = regionFrom;
+
+module.exports.callbackFromWeather = callbackFromWeather;
+module.exports.callbackHuhehaote = callbackHuhehaote;

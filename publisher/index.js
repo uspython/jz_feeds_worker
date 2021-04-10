@@ -65,6 +65,30 @@ class Publisher {
     return results;
   }
 
+  async getMockRawJson() {
+    const results = await Feed.find(
+      {
+        cityId: this.region.city.id,
+        releaseDate: { $gte: dayjs().add(-3, 'month').startOf('day').add(8, 'hours') },
+      },
+      null,
+      { sort: { releaseDate: -1 } },
+    )
+      .select({
+        __v: 0,
+        _id: 0,
+        createdAt: 0,
+        updatedAt: 0,
+        cityId: 0,
+        pollenCount: 0,
+      })
+      .limit(10)
+      .lean()
+      .exec();
+
+    return results;
+  }
+
   /**
  * format to:
  * {
@@ -117,6 +141,40 @@ class Publisher {
 
   async uploadJson() {
     const jsonResults = await this.getRawJson();
+
+    if (jsonResults.length === 0) {
+      throw new Error(`${this.region.city.name} have not content in last 7 days.`);
+    }
+
+    const str = JSON.stringify(this.mapToApiFromJson(jsonResults));
+    const buffer = Buffer.from(str, 'utf8');
+    const bodyJsonGz = pako.gzip(buffer);
+    const fileName = `${this.region.alias}_${config.fileKeyNameSurfix}`;
+
+    // call S3 to retrieve upload file to specified bucket
+    const uploadParams = {
+      Bucket: config.bucketName,
+      Key: fileName,
+      Body: bodyJsonGz,
+      ContentType: 'application/json',
+      ContentEncoding: 'gzip',
+      // Cache 5m
+      CacheControl: `public, max-age=${60 * 5}`,
+    };
+
+    const { ETag } = await this.s3.send(new PutObjectCommand(uploadParams));
+
+    this.s3.destroy();
+    this.s3 = null;
+
+    logger.info(`upload json success: ${this.region.province.name}, ${this.region.city.name}, etag: ${ETag}`);
+    // Archive
+    // this.archiveFileFrom(bodyJsonGz);
+    return 1;
+  }
+
+  async uploadMockJson() {
+    const jsonResults = await this.getMockRawJson();
 
     if (jsonResults.length === 0) {
       throw new Error(`${this.region.city.name} have not content in last 7 days.`);

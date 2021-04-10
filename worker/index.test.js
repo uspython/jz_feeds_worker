@@ -261,6 +261,7 @@ describe('Test JZFeedWorker', () => {
     const [{
       cityId, pollenCount, releaseDate, region,
     }] = feeds;
+
     expect(cityId).toBe(testRegion.city.id);
     expect(releaseDate).toBe(dayjs('2020-03-11').startOf('day').add(8, 'hours').valueOf());
     expect(region.provinceId).toBe(testRegion.province.id);
