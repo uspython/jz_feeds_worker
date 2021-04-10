@@ -70,16 +70,19 @@ async function addManyFeeds(feeds) {
   return d.length;
 }
 
-async function alterFeed(theFeed) {
-  const { cityId, releaseDate, pollenCount } = theFeed;
+async function alterFeed(theFeed, createNew) {
+  const {
+    cityId, releaseDate, pollenCount, region,
+  } = theFeed;
+  const { upsert } = createNew || { upsert: true };
   const { nModified = 0, n } = await Feed.updateOne(
-    { cityId, releaseDate },
+    { cityId, releaseDate, region },
     {
       marsPollenCount: addMarsValue(pollenCount),
       ...theFeed,
     },
     // [options.upsert=false] «Boolean» if true, and no documents found, insert a new document
-    { upsert: true },
+    { upsert },
   );
 
   logger.info(`Feed Altered, ${cityId}, ${releaseDate}, ${n} matched, ${nModified} modified.`);

@@ -237,9 +237,14 @@ class JZHuhehaoteWorker {
     }
 
     const filteredFeeds = feeds.filter((f) => {
-      const releaseDate = dayjs(f.releaseDate, DateFormatString).startOf('day');
-      const toDate = dayjs(dateRange.to, DateFormatString).startOf('day');
-      return releaseDate.isSameOrAfter(toDate);
+      if (dateRange.to === WeatherDefaultDate) {
+        return true;
+      }
+
+      const today = dayjs().endOf('day');
+      const releaseDate = dayjs(f.releaseDate).startOf('day');
+
+      return releaseDate.isBefore(today);
     });
 
     let count = 0;
