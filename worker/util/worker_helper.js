@@ -104,6 +104,7 @@ function provinceFrom(city) {
   return p;
 }
 
+// TODO: (Jeff) 服务端 region 应该有 英语/拼音
 function regionFrom(cnName) {
   let city = cityFrom(cnName);
   let country = null;
