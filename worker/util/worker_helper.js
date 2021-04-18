@@ -130,27 +130,33 @@ function regionFromWeather(cnName) {
   return { city, province, country: !country ? city : country };
 }
 
-function cityCnNameFrom(enName) {
-  // eslint-disable-next-line max-len
-  const ret = config.weatherCitys.find(({ en, code }) => enName.indexOf(en) > -1 || enName.indexOf(code) > -1);
+function regionFromId(provinceId, cityId, countryId) {
+  const province = provinceObject[provinceId];
 
-  if (!ret) {
-    return '';
+  const cities = cityMap[provinceId];
+
+  if (!cities) {
+    throw new Error(`can not find cities: ${province.name}`);
   }
 
-  const { cn } = ret;
-  return cn;
+  const city = cities.find((c) => c.id === cityId);
+  let country = countryMap[cityId].find((c) => c.id === countryId);
+
+  if (!province || !city) {
+    throw new Error('can not find region');
+  }
+
+  country = country || city;
+  return { province, city, country };
 }
 
-function getEnNameWith(cnName) {
-  const ret = config.weatherCitys.find(({ cn }) => cnName.indexOf(cn) > -1);
+function configCitiesJson() {
+  const weatherRegions = config.weatherCitys
+    .map(({ cn }) => regionFromWeather(cn));
+  const apiRegions = config.uploadCities
+    .map(({ provinceId, cityId, countryId }) => regionFromId(provinceId, cityId, countryId));
 
-  if (!ret) {
-    return '';
-  }
-
-  const { en } = ret;
-  return en;
+  return { citys: weatherRegions.concat(apiRegions) };
 }
 
 function getCityCodeWith(cnName) {
@@ -229,17 +235,16 @@ function randomizeArray(original) {
 }
 
 module.exports.cityFrom = cityFrom;
-module.exports.getEnNameWith = getEnNameWith;
 module.exports.callWithRetry = callWithRetry;
 module.exports.WeatherDefaultDate = WeatherDefaultDate;
 module.exports.provinceFrom = provinceFrom;
-module.exports.cityCnNameFrom = cityCnNameFrom;
 module.exports.wait = wait;
 module.exports.randomizeArray = randomizeArray;
 module.exports.countryFrom = countryFrom;
 module.exports.getCityCodeWith = getCityCodeWith;
 module.exports.searchFromCountry = searchFromCountry;
 module.exports.regionFromWeather = regionFromWeather;
-
+module.exports.regionFromId = regionFromId;
+module.exports.configCitiesJson = configCitiesJson;
 module.exports.callbackFromWeather = callbackFromWeather;
 module.exports.callbackHuhehaote = callbackHuhehaote;

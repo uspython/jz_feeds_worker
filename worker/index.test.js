@@ -6,16 +6,16 @@ const {
 } = require('./util/dbhelper');
 const {
   cityFrom,
-  getEnNameWith,
   callbackFromWeather,
   provinceFrom,
-  cityCnNameFrom,
   WeatherDefaultDate,
   randomizeArray,
   countryFrom,
   getCityCodeWith,
   searchFromCountry,
   regionFromWeather,
+  regionFromId,
+  configCitiesJson,
 } = require('./util/worker_helper');
 const config = require('./config');
 
@@ -58,10 +58,9 @@ describe('Test City Utility', () => {
   });
 
   test("should return city's english name", () => {
-    const enName = getEnNameWith('乌鲁木齐');
+    const testCity = cityFrom('乌鲁木齐');
 
-    expect(enName.length).not.toBe(0);
-    expect(enName).toBe('wulumuqi');
+    expect(testCity.pinyin).toBe('wulumuqi');
   });
 
   test("should return city's english code", () => {
@@ -69,13 +68,6 @@ describe('Test City Utility', () => {
 
     expect(code.length).not.toBe(0);
     expect(code).toBe('chegnde');
-  });
-
-  test("should return city's chinese name", () => {
-    const name = cityCnNameFrom('wulumuqi');
-
-    expect(name.length).not.toBe(0);
-    expect(name).toBe('乌鲁木齐');
   });
 
   test('should return a provice', () => {
@@ -103,6 +95,64 @@ describe('Test City Utility', () => {
     expect(country).not.toBeNull();
     expect(country.city).toBe('兴安盟');
     expect(country.pinyin).toBe('wulanhaote');
+  });
+
+  test('should get region with id', () => {
+    const e = {
+      // 内蒙古呼和浩特赛罕区
+      provinceId: '150000000000',
+      cityId: '150100000000',
+      countryId: '150105000000',
+    };
+
+    const region = regionFromId(e.provinceId, e.cityId, e.countryId);
+
+    expect(region.province.name).toBe('内蒙古自治区');
+    expect(region.city.name).toBe('呼和浩特市');
+    expect(region.country.name).toBe('赛罕区');
+  });
+
+  test('should get region with id', () => {
+    const e = {
+      // 北京市
+      provinceId: '110000000000',
+      cityId: '110100000000',
+      countryId: '110100000000',
+    };
+    const region = regionFromId(e.provinceId, e.cityId, e.countryId);
+
+    expect(region.province.name).toBe('北京市');
+    expect(region.city.name).toBe('市辖区');
+    expect(region.country.name).toBe('市辖区');
+  });
+
+  test('should get config region', () => {
+    const { citys } = configCitiesJson();
+
+    // console.log(JSON.stringify(citys));
+
+    expect(citys.length).toBe(config.weatherCitys.length + config.uploadCities.length);
+
+    for (let index = 0; index < config.weatherCitys.length; index += 1) {
+      const weatherCity = config.weatherCitys[index];
+      const region = citys[index];
+
+      const regionName = `${region.province.name}${region.city.name}${region.country.name}`;
+      const regionPinyin = `${region.province.pinyin}${region.city.pinyin || ''}${region.country.pinyin || ''}`;
+      expect(regionName.indexOf(weatherCity.cn)).toBeGreaterThanOrEqual(0);
+      expect(regionPinyin.indexOf(weatherCity.en)).toBeGreaterThanOrEqual(0);
+
+      if (regionPinyin.indexOf(weatherCity.en) < 0) {
+        console.log(weatherCity);
+      }
+    }
+
+    for (let index = config.weatherCitys.length; index < citys.length; index += 1) {
+      const uploadCity = config.uploadCities[index - config.weatherCitys.length];
+      const region = citys[index];
+
+      expect(region.city.id).toBe(uploadCity.cityId);
+    }
   });
 
   test('should get region with city name', () => {

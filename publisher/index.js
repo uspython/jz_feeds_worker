@@ -9,7 +9,6 @@ const _ = require('lodash');
 const config = require('../worker/config');
 const Feed = require('../worker/models/feed');
 const logger = require('../worker/logger');
-const { getEnNameWith } = require('../worker/util/worker_helper');
 
 const credentials = new AWS.SharedIniFileCredentials({ profile: 'default' });
 const myConfig = new AWS.Config({
@@ -27,12 +26,20 @@ class Publisher {
     this.bucket = bucket || { name: config.bucketName };
 
     this.region = aRegion;
-    const {
-      province, city,
-      country: { name: countryName = '' } = { country: { name: '' } },
-    } = this.region;
-    const enName = getEnNameWith(`${province.name}${city.name}${countryName || ''}`);
-    this.region.alias = enName;
+    const { province, city, country } = this.region;
+
+    let fileName = '';
+    if (city.id === country.id) {
+      fileName = [province.pinyin, city.pinyin]
+        .filter((i) => !!i)
+        .join('_');
+    } else {
+      fileName = [province.pinyin, city.pinyin, city.pinyin]
+        .filter((i) => !!i)
+        .join('_');
+    }
+
+    this.region.alias = fileName;
     // Create S3 service object
     this.s3 = new S3Client({ region: config.awsRegion });
   }
@@ -90,13 +97,13 @@ class Publisher {
   }
 
   /**
- * format to:
- * {
-    "success": boolean,
-    "message": "error message",
-    "data": { }
+* format to:
+* {
+  "success": boolean,
+  "message": "error message",
+  "data": { }
 }
- */
+*/
   mapToApiFromJson(json) {
     const groupByRegion = _.groupBy(json, 'region.countryId');
     const { province, city, country } = this.region;
@@ -131,7 +138,7 @@ class Publisher {
         fs.mkdirSync(archiveDir, { recursive: true });
       }
 
-      fs.writeFile(`${archiveDir}/${this.region.alias}_${config.fileKeyNameSurfix}.gz`, data, (e) => {
+      fs.writeFile(`${archiveDir}/${this.region.alias}${config.fileKeyNameSurfix}.gz`, data, (e) => {
         if (!e) {
           logger.info(`archive ${this.region.alias} successfully`);
         }
@@ -150,7 +157,7 @@ class Publisher {
     const str = JSON.stringify(this.mapToApiFromJson(jsonResults));
     const buffer = Buffer.from(str, 'utf8');
     const bodyJsonGz = pako.gzip(buffer);
-    const fileName = `${this.region.alias}_${config.fileKeyNameSurfix}`;
+    const fileName = `${this.region.alias}${config.fileKeyNameSurfix}`;
 
     // call S3 to retrieve upload file to specified bucket
     const uploadParams = {
@@ -184,7 +191,7 @@ class Publisher {
     const str = JSON.stringify(this.mapToApiFromJson(jsonResults));
     const buffer = Buffer.from(str, 'utf8');
     const bodyJsonGz = pako.gzip(buffer);
-    const fileName = `${this.region.alias}_${config.fileKeyNameSurfix}`;
+    const fileName = `${this.region.alias}${config.fileKeyNameSurfix}`;
 
     // call S3 to retrieve upload file to specified bucket
     const uploadParams = {
@@ -203,6 +210,34 @@ class Publisher {
     this.s3 = null;
 
     logger.info(`upload json success: ${this.region.province.name}, ${this.region.city.name}, etag: ${ETag}`);
+    // Archive
+    // this.archiveFileFrom(bodyJsonGz);
+    return 1;
+  }
+
+  async uploadConfigJson(configData) {
+    const str = JSON.stringify(configData);
+    const buffer = Buffer.from(str, 'utf8');
+    const bodyJsonGz = pako.gzip(buffer);
+    const fileName = 'config.json';
+
+    // call S3 to retrieve upload file to specified bucket
+    const uploadParams = {
+      Bucket: config.bucketName,
+      Key: fileName,
+      Body: bodyJsonGz,
+      ContentType: 'application/json',
+      ContentEncoding: 'gzip',
+      // Cache 5m
+      CacheControl: `public, max-age=${3600 * 2}`,
+    };
+
+    const { ETag } = await this.s3.send(new PutObjectCommand(uploadParams));
+
+    this.s3.destroy();
+    this.s3 = null;
+
+    logger.info(`upload config json success, etag: ${ETag}`);
     // Archive
     // this.archiveFileFrom(bodyJsonGz);
     return 1;

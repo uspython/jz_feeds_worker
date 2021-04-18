@@ -67,12 +67,12 @@ const bree = new Bree({
     },
     {
       name: 'huhehaote',
-      timeout: '1m',
+      timeout: '11m',
       interval: '1h',
     },
     {
       name: 'upload_s3',
-      timeout: '40m',
+      timeout: '30s',
       interval: '1h',
     },
   ],
