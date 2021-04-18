@@ -1,8 +1,9 @@
 const { cityMap } = require('../assets/city');
-const { CountryMap } = require('../assets/county');
+const { countryMap } = require('../assets/county');
 const { provinceObject } = require('../assets/province_object');
 const config = require('../config');
 const logger = require('../logger');
+// const districts = require('../assets/district');
 
 // Start Date
 const WeatherDefaultDate = '2021-03-01';
@@ -50,10 +51,10 @@ function cityFromCityId(cityId) {
 function cityFromCountryId(countryId) {
   let ret = null;
 
-  for (let index = 0; index < Object.keys(CountryMap).length; index += 1) {
-    const cityId = Object.keys(CountryMap)[index];
+  for (let index = 0; index < Object.keys(countryMap).length; index += 1) {
+    const cityId = Object.keys(countryMap)[index];
 
-    const countries = CountryMap[cityId];
+    const countries = countryMap[cityId];
     const isExisted = countries.findIndex((c) => (c.id === countryId)) > -1;
 
     if (isExisted) {
@@ -66,7 +67,7 @@ function cityFromCountryId(countryId) {
 }
 
 function searchFromCountry(cnName) {
-  const countries = Object.values(CountryMap)
+  const countries = Object.values(countryMap)
     .reduce((p, c) => p.concat(c), [])
     .filter((c) => c.city.indexOf(cnName) > -1 || c.name.indexOf(cnName) > -1);
 
@@ -78,7 +79,7 @@ function searchFromCountry(cnName) {
 }
 
 function countryFrom(city, countryId) {
-  const countries = CountryMap[city.id];
+  const countries = countryMap[city.id];
 
   if (!countries && countries.length === 0) {
     return null;
@@ -104,8 +105,12 @@ function provinceFrom(city) {
   return p;
 }
 
-// TODO: (Jeff) 服务端 region 应该有 英语/拼音
-function regionFrom(cnName) {
+// function districtFrom(id) {
+//   const region = districts.find(({ id: theId }) => (theId === id));
+//   return region;
+// }
+
+function regionFromWeather(cnName) {
   let city = cityFrom(cnName);
   let country = null;
 
@@ -234,7 +239,7 @@ module.exports.randomizeArray = randomizeArray;
 module.exports.countryFrom = countryFrom;
 module.exports.getCityCodeWith = getCityCodeWith;
 module.exports.searchFromCountry = searchFromCountry;
-module.exports.regionFrom = regionFrom;
+module.exports.regionFromWeather = regionFromWeather;
 
 module.exports.callbackFromWeather = callbackFromWeather;
 module.exports.callbackHuhehaote = callbackHuhehaote;

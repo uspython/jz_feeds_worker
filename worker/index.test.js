@@ -15,7 +15,7 @@ const {
   countryFrom,
   getCityCodeWith,
   searchFromCountry,
-  regionFrom,
+  regionFromWeather,
 } = require('./util/worker_helper');
 const config = require('./config');
 
@@ -37,6 +37,7 @@ describe('Test City Utility', () => {
     expect(testCity.province).toBe('北京市');
     expect(testCity.name).toBe('市辖区');
     expect(testCity.id).toBe('110100000000');
+    expect(testCity.pinyin).toBe(undefined);
   });
 
   test('should return Xian', () => {
@@ -45,6 +46,7 @@ describe('Test City Utility', () => {
     expect(testCity.province).toBe('陕西省');
     expect(testCity.name).toBe('西安市');
     expect(testCity.id).toBe('610100000000');
+    expect(testCity.pinyin).toBe('xian');
   });
 
   test('should return Zibo', () => {
@@ -52,6 +54,7 @@ describe('Test City Utility', () => {
 
     expect(testCity.province).toBe('山东省');
     expect(testCity.name).toBe('淄博市');
+    expect(testCity.pinyin).toBe('zibo');
   });
 
   test("should return city's english name", () => {
@@ -81,6 +84,7 @@ describe('Test City Utility', () => {
 
     expect(p.name).toBe('辽宁省');
     expect(p.id).toBe('210000000000');
+    expect(p.pinyin).toBe('liaoning');
   });
 
   test('should return a country', () => {
@@ -91,16 +95,18 @@ describe('Test City Utility', () => {
     expect(country).not.toBeNull();
     expect(country.id).toBe('321323000000');
     expect(country.name).toBe('泗阳县');
+    expect(country.pinyin).toBe('siyang');
   });
 
-  test('should search country from CountryMap', () => {
+  test('should search country from countryMap', () => {
     const country = searchFromCountry('乌兰浩特');
     expect(country).not.toBeNull();
     expect(country.city).toBe('兴安盟');
+    expect(country.pinyin).toBe('wulanhaote');
   });
 
   test('should get region with city name', () => {
-    const { province, city, country } = regionFrom('宿迁');
+    const { province, city, country } = regionFromWeather('宿迁');
     const testCity = cityFrom('宿迁');
     const testProvince = provinceFrom(testCity);
 
@@ -116,7 +122,7 @@ describe('Test City Utility', () => {
   });
 
   test('should get region with country name 1', () => {
-    const { province, city, country } = regionFrom('乌兰浩特');
+    const { province, city, country } = regionFromWeather('乌兰浩特');
 
     expect(province).not.toBeNull();
     expect(city).not.toBeNull();
@@ -129,7 +135,7 @@ describe('Test City Utility', () => {
   });
 
   test('should get region with country name 2', () => {
-    const { province, city, country } = regionFrom('泗阳');
+    const { province, city, country } = regionFromWeather('泗阳');
 
     const testCity = cityFrom('宿迁');
     const testProvince = provinceFrom(testCity);
@@ -149,7 +155,7 @@ describe('Test City Utility', () => {
     const regionObjects = [];
     for (let idx = 0; idx < config.weatherCitys.length; idx += 1) {
       const { cn } = config.weatherCitys[idx];
-      const r = regionFrom(cn);
+      const r = regionFromWeather(cn);
 
       regionObjects.push(r);
     }
@@ -177,7 +183,7 @@ describe('Test JZFeedWorker', () => {
     }, 500);
   });
   test(`should get initial date range: ${WeatherDefaultDate}/`, async () => {
-    const region = regionFrom('肇庆');
+    const region = regionFromWeather('肇庆');
     const w = new JZFeedWorker(region);
     const { from, to } = await w.getMonthRange();
     expect(from).toBe(WeatherDefaultDate);
@@ -186,7 +192,7 @@ describe('Test JZFeedWorker', () => {
 
   test('should get test month range: 2020-11-11/2020-11-12', () => {
     expect(async () => {
-      const jieyang = regionFrom('揭阳');
+      const jieyang = regionFromWeather('揭阳');
       const w = new JZFeedWorker(jieyang);
       const { from, to } = await w.getMonthRange();
       expect(from).toBe('2020-11-12');
@@ -195,7 +201,7 @@ describe('Test JZFeedWorker', () => {
   });
 
   test('month range should before (NOW + 1Day)', async () => {
-    const testRegion = regionFrom('烟台');
+    const testRegion = regionFromWeather('烟台');
     const today = dayjs().startOf('day').add(8, 'hours');
 
     const newFeed = {
@@ -221,7 +227,7 @@ describe('Test JZFeedWorker', () => {
   });
 
   test('should get test date: 2020-11-12', async () => {
-    const jieyang = regionFrom('揭阳');
+    const jieyang = regionFromWeather('揭阳');
     const w = new JZFeedWorker(jieyang);
     const { from, to } = await w.getNextDayRange();
     expect(from).toBe('2020-11-12');
@@ -229,7 +235,7 @@ describe('Test JZFeedWorker', () => {
   });
 
   test('fetch weather api should return raw data', async () => {
-    const testCity = regionFrom('北京');
+    const testCity = regionFromWeather('北京');
     const w = new JZFeedWorker(testCity);
     const nextDay = await w.getNextDayRange();
     const rawData = await w.fetchRawDataFromWeather({
@@ -252,7 +258,7 @@ describe('Test JZFeedWorker', () => {
       content: '敏感人群减少外出，外出需防护。',
     }];
 
-    const testRegion = regionFrom('北京');
+    const testRegion = regionFromWeather('北京');
     const w = new JZFeedWorker(testRegion);
     const feeds = w.feedsFromWeatherRaw(mockData);
 

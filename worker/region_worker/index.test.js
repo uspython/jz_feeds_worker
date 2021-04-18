@@ -4,14 +4,14 @@ const {
 } = require('../util/dbhelper');
 const {
   WeatherDefaultDate,
-  regionFrom,
+  regionFromWeather,
 } = require('../util/worker_helper');
 
 const JZHuhehaoteWorker = require('./index');
 
 const HuhehaoteCountry = { saihan: '150105000000', xincheng: '150102000000' };
 
-const defaultRegion = regionFrom('赛罕区');
+const defaultRegion = regionFromWeather('赛罕区');
 
 describe('Test 呼和浩特 Feed Worker', () => {
   describe('Test 呼和浩特 Feed Worker with Mongodb', () => {

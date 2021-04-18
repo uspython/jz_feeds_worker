@@ -1,6 +1,6 @@
 import Publisher from '.';
 import config from '../worker/config';
-import { regionFrom } from '../worker/util/worker_helper';
+import { regionFromWeather } from '../worker/util/worker_helper';
 import {
   connect,
   disconnect,
@@ -21,7 +21,7 @@ describe('Test AWS Publisher', () => {
     }, 800);
   });
 
-  const theRegion = regionFrom('包头');
+  const theRegion = regionFromWeather('包头');
   const publisher = new Publisher(theRegion, testBucket);
 
   test('should return buckets', async () => {

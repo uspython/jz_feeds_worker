@@ -1,7 +1,7 @@
 const Publisher = require('../publisher');
 const config = require('../worker/config');
 const logger = require('../worker/logger');
-const { regionFrom } = require('../worker/util/worker_helper');
+const { regionFromWeather } = require('../worker/util/worker_helper');
 const { connect, disconnect } = require('../worker/util/dbhelper');
 
 const s3bucket = {
@@ -9,7 +9,7 @@ const s3bucket = {
 };
 
 async function doneWithCity(cityName) {
-  const theRegion = regionFrom(cityName);
+  const theRegion = regionFromWeather(cityName);
 
   const { province, city, country: { name: countryName = '' } = { name: '' } } = theRegion;
   logger.info(`[UploadS3] start Publisher...${province.name}, ${city.name}, ${countryName || ''}`);

@@ -1,13 +1,13 @@
 const config = require('../worker/config');
 const JZFeedWorker = require('../worker/index');
 const logger = require('../worker/logger');
-const { wait, randomizeArray, regionFrom } = require('../worker/util/worker_helper');
+const { wait, randomizeArray, regionFromWeather } = require('../worker/util/worker_helper');
 const { connect, disconnect } = require('../worker/util/dbhelper');
 
 async function doneWithCity(cityName) {
   await wait(Math.floor(Math.random() * 30 * 1000));
 
-  const theRegion = regionFrom(cityName);
+  const theRegion = regionFromWeather(cityName);
 
   logger.info(`[Weather] start fetching...${theRegion.province.name}, ${theRegion.city.name}, ${theRegion.country.name}`);
   const w = new JZFeedWorker(theRegion, 'day');
