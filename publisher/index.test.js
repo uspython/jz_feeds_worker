@@ -1,6 +1,8 @@
 import Publisher from '.';
 import config from '../worker/config';
-import { regionFromWeather, configCitiesJson } from '../worker/util/worker_helper';
+import {
+  regionFromWeather, configCitiesJson,
+} from '../worker/util/worker_helper';
 import {
   connect,
   disconnect,
@@ -54,8 +56,9 @@ describe('Test AWS Publisher', () => {
 
   test("should upload city's config json file to s3", async () => {
     const run = async () => {
+      const p = new Publisher(theRegion, testBucket);
       const cityConfig = configCitiesJson();
-      const status = await publisher.uploadConfigJson(cityConfig);
+      const status = await p.uploadConfigJson(cityConfig);
       expect(status).not.toBe(0);
     };
 
