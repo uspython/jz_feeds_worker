@@ -150,6 +150,23 @@ function regionFromId(provinceId, cityId, countryId) {
   return { province, city, country };
 }
 
+function aliasFromRegion(region) {
+  const { province, city, country } = region;
+
+  let fileName = '';
+  if (city.id === country.id) {
+    fileName = [province.pinyin, city.pinyin]
+      .filter((i) => !!i)
+      .join('_');
+  } else {
+    fileName = [province.pinyin, city.pinyin, country.pinyin]
+      .filter((i) => !!i)
+      .join('_');
+  }
+
+  return fileName;
+}
+
 function configCitiesJson() {
   const weatherRegions = config.weatherCitys
     .map(({ cn }) => regionFromWeather(cn));
@@ -248,3 +265,4 @@ module.exports.regionFromId = regionFromId;
 module.exports.configCitiesJson = configCitiesJson;
 module.exports.callbackFromWeather = callbackFromWeather;
 module.exports.callbackHuhehaote = callbackHuhehaote;
+module.exports.aliasFromRegion = aliasFromRegion;

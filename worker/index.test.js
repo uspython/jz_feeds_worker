@@ -16,6 +16,7 @@ const {
   regionFromWeather,
   regionFromId,
   configCitiesJson,
+  aliasFromRegion,
 } = require('./util/worker_helper');
 const config = require('./config');
 
@@ -106,10 +107,12 @@ describe('Test City Utility', () => {
     };
 
     const region = regionFromId(e.provinceId, e.cityId, e.countryId);
+    const fileName = aliasFromRegion(region);
 
     expect(region.province.name).toBe('内蒙古自治区');
     expect(region.city.name).toBe('呼和浩特市');
     expect(region.country.name).toBe('赛罕区');
+    expect(fileName).toBe('neimenggu_huhehaote_saihan');
   });
 
   test('should get region with id', () => {
@@ -120,10 +123,12 @@ describe('Test City Utility', () => {
       countryId: '110100000000',
     };
     const region = regionFromId(e.provinceId, e.cityId, e.countryId);
+    const fileName = aliasFromRegion(region);
 
     expect(region.province.name).toBe('北京市');
     expect(region.city.name).toBe('市辖区');
     expect(region.country.name).toBe('市辖区');
+    expect(fileName).toBe('beijing');
   });
 
   test('should get config region', () => {
@@ -136,6 +141,8 @@ describe('Test City Utility', () => {
     for (let index = 0; index < config.weatherCitys.length; index += 1) {
       const weatherCity = config.weatherCitys[index];
       const region = citys[index];
+
+      // console.log(aliasFromRegion(region));
 
       const regionName = `${region.province.name}${region.city.name}${region.country.name}`;
       const regionPinyin = `${region.province.pinyin}${region.city.pinyin || ''}${region.country.pinyin || ''}`;
@@ -150,6 +157,7 @@ describe('Test City Utility', () => {
     for (let index = config.weatherCitys.length; index < citys.length; index += 1) {
       const uploadCity = config.uploadCities[index - config.weatherCitys.length];
       const region = citys[index];
+      // console.log(aliasFromRegion(region));
 
       expect(region.city.id).toBe(uploadCity.cityId);
     }
@@ -172,7 +180,8 @@ describe('Test City Utility', () => {
   });
 
   test('should get region with country name 1', () => {
-    const { province, city, country } = regionFromWeather('乌兰浩特');
+    const region = regionFromWeather('乌兰浩特');
+    const { province, city, country } = region;
 
     expect(province).not.toBeNull();
     expect(city).not.toBeNull();
@@ -182,6 +191,9 @@ describe('Test City Utility', () => {
     expect(country.city).toBe('兴安盟');
     expect(city.name).toBe('兴安盟');
     expect(province.id).toBe('150000000000');
+
+    const fileName = aliasFromRegion(region);
+    expect(fileName).toBe('neimenggu_xingan_wulanhaote');
   });
 
   test('should get region with country name 2', () => {

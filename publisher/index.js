@@ -9,6 +9,7 @@ const _ = require('lodash');
 const config = require('../worker/config');
 const Feed = require('../worker/models/feed');
 const logger = require('../worker/logger');
+const { aliasFromRegion } = require('../worker/util/worker_helper');
 
 const credentials = new AWS.SharedIniFileCredentials({ profile: 'default' });
 const myConfig = new AWS.Config({
@@ -26,20 +27,8 @@ class Publisher {
     this.bucket = bucket || { name: config.bucketName };
 
     this.region = aRegion;
-    const { province, city, country } = this.region;
 
-    let fileName = '';
-    if (city.id === country.id) {
-      fileName = [province.pinyin, city.pinyin]
-        .filter((i) => !!i)
-        .join('_');
-    } else {
-      fileName = [province.pinyin, city.pinyin, city.pinyin]
-        .filter((i) => !!i)
-        .join('_');
-    }
-
-    this.region.alias = fileName;
+    this.region.alias = aliasFromRegion(aRegion);
     // Create S3 service object
     this.s3 = new S3Client({ region: config.awsRegion });
   }

@@ -1,6 +1,6 @@
 import Publisher from '.';
 import config from '../worker/config';
-import { regionFromWeather } from '../worker/util/worker_helper';
+import { regionFromWeather, configCitiesJson } from '../worker/util/worker_helper';
 import {
   connect,
   disconnect,
@@ -39,6 +39,23 @@ describe('Test AWS Publisher', () => {
   test("should upload city's json file to s3 with gzip", async () => {
     const run = async () => {
       const status = await publisher.uploadMockJson();
+      expect(status).not.toBe(0);
+    };
+
+    let err = null;
+    try {
+      await run();
+    } catch (error) {
+      err = error;
+    }
+
+    expect(err).toBeNull();
+  });
+
+  test("should upload city's config json file to s3", async () => {
+    const run = async () => {
+      const cityConfig = configCitiesJson();
+      const status = await publisher.uploadConfigJson(cityConfig);
       expect(status).not.toBe(0);
     };
 
