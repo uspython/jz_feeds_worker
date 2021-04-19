@@ -28,22 +28,32 @@ class JZFeedWorker {
     this.scheduleType = scheduleType || 'day';
   }
 
+  // TODO: (Jeff) Add provinceId/countryId Column to DB
   async getNextDayRange() {
-    const { city: { id } } = this.region;
-    const cityId = id;
+    const {
+      city: { id: cityId },
+      province: { id: provinceId },
+      country: { id: countryId },
+    } = this.region;
 
     if (!cityId) {
       return null;
     }
 
     let nextDay = WeatherDefaultDate;
-    const isExisted = await Feed.exists({ cityId });
+    const isExisted = await Feed.exists({
+      cityId,
+      region: { provinceId, countryId },
+    });
 
     if (!isExisted) {
       // From 2020-03-01
     } else {
       const { releaseDate } = await Feed.findOne(
-        { cityId },
+        {
+          cityId,
+          region: { provinceId, countryId },
+        },
         null,
         { sort: { releaseDate: -1 } },
       ).lean().exec();

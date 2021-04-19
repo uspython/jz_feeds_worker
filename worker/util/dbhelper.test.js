@@ -52,8 +52,8 @@ describe('Test dbhelper', () => {
       const newFeed = {
         cityId: '445200000000',
         region: {
-          provinceId: '11010010101',
-          countryId: '11010010103',
+          provinceId: '440000000000',
+          countryId: '445200000000',
         },
         releaseDate: dayjs('2020-11-11').startOf('day').valueOf(),
         pollenCount: '4',

@@ -11,6 +11,7 @@ const {
   getCityCodeWith,
   callbackHuhehaote,
   WeatherDefaultDate,
+  regionFromId
 } = require('../util/worker_helper');
 
 dayjs.extend(utc);
@@ -25,8 +26,16 @@ class JZHuhehaoteWorker {
    * @param {aRegion} Region Object
    * @param {scheduleType} scheduleType 'day' | 'month'
    */
-  constructor(aRegion, scheduleType) {
-    this.region = aRegion;
+  constructor(scheduleType) {
+    const e = {
+      // 内蒙古呼和浩特赛罕区
+      provinceId: '150000000000',
+      cityId: '150100000000',
+      countryId: '150105000000',
+    };
+
+    const region = regionFromId(e.provinceId, e.cityId, e.countryId);
+    this.region = region;
     this.scheduleType = scheduleType || 'day';
   }
 
@@ -111,7 +120,8 @@ class JZHuhehaoteWorker {
       throw new Error('City Code can not be Empty');
     }
     const requestParams = {};
-    const { url } = config.specificRegions.find((r) => r.cn === country.name);
+    // TODO: (Jeff) Update specificRegions
+    const { url } = config.specificRegions.find((r) => !!r.url);
     if (!url) {
       throw new Error('region url not found');
     }

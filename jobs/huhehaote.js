@@ -1,23 +1,20 @@
 const JZHuhehaoteWorker = require('../worker/region_worker');
 const logger = require('../worker/logger');
-const { wait, regionFromWeather } = require('../worker/util/worker_helper');
+const { wait } = require('../worker/util/worker_helper');
 const { connect, disconnect } = require('../worker/util/dbhelper');
 
-async function doneWithCity(cityName) {
+async function invoke() {
   await wait(Math.floor(Math.random() * 30 * 1000));
 
-  const theRegion = regionFromWeather(cityName);
-
-  logger.info(`[Weather] start fetching...${theRegion.province.name}, ${theRegion.city.name}, ${theRegion.country.name}`);
-  const w = new JZHuhehaoteWorker(theRegion, 'day');
+  const w = new JZHuhehaoteWorker();
   const r = await w.invoke();
-  logger.info(`[Weather] ${cityName}, ${r} added`);
+  logger.info(`[JZHuhehaoteWorker]: ${r} added`);
 }
 
 async function start() {
   try {
     await connect();
-    await doneWithCity('赛罕区');
+    await invoke();
     await disconnect();
   } catch (err) {
     logger.error({ err });

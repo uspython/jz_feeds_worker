@@ -4,14 +4,11 @@ const {
 } = require('../util/dbhelper');
 const {
   WeatherDefaultDate,
-  regionFromWeather,
 } = require('../util/worker_helper');
 
 const JZHuhehaoteWorker = require('./index');
 
 const HuhehaoteCountry = { saihan: '150105000000', xincheng: '150102000000' };
-
-const defaultRegion = regionFromWeather('赛罕区');
 
 describe('Test 呼和浩特 Feed Worker', () => {
   describe('Test 呼和浩特 Feed Worker with Mongodb', () => {
@@ -26,14 +23,14 @@ describe('Test 呼和浩特 Feed Worker', () => {
     });
 
     test(`should get initial date range: ${WeatherDefaultDate}/`, async () => {
-      const w = new JZHuhehaoteWorker(defaultRegion);
+      const w = new JZHuhehaoteWorker();
       const { from, to } = await w.getNextDayRange();
       expect(from).not.toBeNull();
       expect(to).not.toBeNull();
     });
 
     test('fetch api should return raw data', async () => {
-      const w = new JZHuhehaoteWorker(defaultRegion);
+      const w = new JZHuhehaoteWorker();
       const rawData = await w.fetchRawData();
       expect(rawData.length).not.toBe(0);
     });
@@ -49,7 +46,7 @@ describe('Test 呼和浩特 Feed Worker', () => {
         { skDate: '2021-04-08', skSouth: '1525', skNorth: '81' },
       ];
 
-      const w = new JZHuhehaoteWorker(defaultRegion);
+      const w = new JZHuhehaoteWorker();
       const feeds = w.feedsFrom(mockData);
 
       expect(feeds.length).toBe(14);
