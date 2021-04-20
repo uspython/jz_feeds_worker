@@ -132,15 +132,15 @@ describe('Test City Utility', () => {
   });
 
   test('should get config region', () => {
-    const { citys } = configCitiesJson();
+    const { data: { regions } } = configCitiesJson();
 
     // console.log(JSON.stringify(citys));
 
-    expect(citys.length).toBe(config.weatherCitys.length + config.uploadCities.length);
+    expect(regions.length).toBe(config.weatherCitys.length + config.uploadCities.length);
 
     for (let index = 0; index < config.weatherCitys.length; index += 1) {
       const weatherCity = config.weatherCitys[index];
-      const region = citys[index];
+      const region = regions[index];
 
       // console.log(aliasFromRegion(region));
 
@@ -154,9 +154,9 @@ describe('Test City Utility', () => {
       }
     }
 
-    for (let index = config.weatherCitys.length; index < citys.length; index += 1) {
+    for (let index = config.weatherCitys.length; index < regions.length; index += 1) {
       const uploadCity = config.uploadCities[index - config.weatherCitys.length];
-      const region = citys[index];
+      const region = regions[index];
       // console.log(aliasFromRegion(region));
 
       expect(region.city.id).toBe(uploadCity.cityId);

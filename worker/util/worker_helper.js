@@ -167,13 +167,21 @@ function aliasFromRegion(region) {
   return fileName;
 }
 
+// TODO: (Jeff) update function name
 function configCitiesJson() {
   const weatherRegions = config.weatherCitys
     .map(({ cn }) => regionFromWeather(cn));
   const apiRegions = config.uploadCities
     .map(({ provinceId, cityId, countryId }) => regionFromId(provinceId, cityId, countryId));
 
-  return { citys: weatherRegions.concat(apiRegions) };
+  const regions = weatherRegions.concat(apiRegions);
+  return {
+    success: true,
+    message: '',
+    data: {
+      regions,
+    },
+  };
 }
 
 function getCityCodeWith(cnName) {
