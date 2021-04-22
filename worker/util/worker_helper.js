@@ -4,6 +4,7 @@ const { provinceObject } = require('../assets/province_object');
 const config = require('../config');
 const logger = require('../logger');
 // const districts = require('../assets/district');
+const coordinates = require('../assets/coordinate.json');
 
 // Start Date
 const WeatherDefaultDate = '2021-03-01';
@@ -110,6 +111,27 @@ function provinceFrom(city) {
 //   return region;
 // }
 
+function coordinateFrom(provinceName, cityName, countryName) {
+  /**
+   * {
+        "area": "",
+        "city": "市辖区",
+        "country": "中国",
+        "lat": "39.910924547299565",
+        "lng": "116.4133836971231",
+        "province": "北京市"
+    },
+   */
+  const { lat, lng } = coordinates
+    .find(({ province, city, area }) => {
+      const ret = province.indexOf(provinceName) > -1
+        && city.indexOf(cityName) > -1
+        && area.indexOf(countryName) > -1;
+      return ret;
+    });
+  return { lat, lng };
+}
+
 function regionFromWeather(cnName) {
   let city = cityFrom(cnName);
   let country = null;
@@ -127,7 +149,18 @@ function regionFromWeather(cnName) {
   }
 
   const province = provinceFrom(city);
-  return { city, province, country: !country ? city : country };
+
+  let coord = null;
+  if (!country) {
+    country = city;
+    coord = coordinateFrom(province.name, city.name, '');
+  } else {
+    coord = coordinateFrom(province.name, city.name, country.name);
+  }
+
+  return {
+    city, province, country, coord,
+  };
 }
 
 function regionFromId(provinceId, cityId, countryId) {
@@ -146,8 +179,17 @@ function regionFromId(provinceId, cityId, countryId) {
     throw new Error('can not find region');
   }
 
-  country = country || city;
-  return { province, city, country };
+  let coord = null;
+  if (!country) {
+    country = city;
+    coord = coordinateFrom(province.name, city.name, '');
+  } else {
+    coord = coordinateFrom(province.name, city.name, country.name);
+  }
+
+  return {
+    province, city, country, coord,
+  };
 }
 
 function aliasFromRegion(region) {
