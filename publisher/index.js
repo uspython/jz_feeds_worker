@@ -140,6 +140,11 @@ class Publisher {
     }
 
     const str = JSON.stringify(this.mapToApiFromJson(jsonResults));
+
+    if (process.env.NODE_ENV === 'development') {
+      console.log(str);
+    }
+
     const buffer = Buffer.from(str, 'utf8');
     const bodyJsonGz = pako.gzip(buffer);
     const fileName = `${this.region.alias}${config.fileKeyNameSurfix}`;
@@ -174,6 +179,9 @@ class Publisher {
     }
 
     const str = JSON.stringify(this.mapToApiFromJson(jsonResults));
+
+    console.log(str);
+
     const buffer = Buffer.from(str, 'utf8');
     const bodyJsonGz = pako.gzip(buffer);
     const fileName = `${this.region.alias}${config.fileKeyNameSurfix}`;

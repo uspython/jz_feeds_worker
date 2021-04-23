@@ -58,6 +58,9 @@ describe('Test AWS Publisher', () => {
     const run = async () => {
       const p = new Publisher(theRegion, testBucket);
       const cityConfig = configCitiesJson();
+
+      console.log(JSON.stringify(cityConfig));
+
       const status = await p.uploadConfigJson(cityConfig);
       expect(status).not.toBe(0);
     };
