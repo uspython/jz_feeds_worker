@@ -95,16 +95,12 @@ class Publisher {
 */
   mapToApiFromJson(json) {
     const groupByRegion = _.groupBy(json, 'region.countryId');
-    const { province, city, country } = this.region;
+    const theRegion = this.region;
 
     const pollenData = Object.keys(groupByRegion)
       .map((countryId) => ({
         latest: groupByRegion[countryId],
-        region: {
-          province,
-          city,
-          country,
-        },
+        region: theRegion,
       }));
 
     return {
