@@ -61,7 +61,7 @@ describe('Test City Utility', () => {
   test("should return city's english name", () => {
     const testCity = cityFrom('乌鲁木齐');
 
-    expect(testCity.pinyin).toBe('wulumuqi');
+    expect(testCity.pinyin).toBe('urumqi');
   });
 
   test("should return city's english code", () => {

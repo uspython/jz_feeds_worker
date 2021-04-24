@@ -134,7 +134,7 @@ const provinceObject = {
   },
   '610000000000': {
     'name': '陕西省',
-    'pinyin': 'shanxi',
+    'pinyin': 'shaanxi',
     'id': '610000000000',
   },
   '620000000000': {
