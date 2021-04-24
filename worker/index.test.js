@@ -95,7 +95,7 @@ describe('Test City Utility', () => {
     const country = searchFromCountry('乌兰浩特');
     expect(country).not.toBeNull();
     expect(country.city).toBe('兴安盟');
-    expect(country.pinyin).toBe('wulanhaote');
+    expect(country.pinyin).toBe('ulanhot');
   });
 
   test('should get region with id', () => {
@@ -114,7 +114,7 @@ describe('Test City Utility', () => {
     expect(region.province.name).toBe('内蒙古自治区');
     expect(region.city.name).toBe('呼和浩特市');
     expect(region.country.name).toBe('赛罕区');
-    expect(fileName).toBe('neimenggu_huhehaote_saihan');
+    expect(fileName).toBe('innermongolia_hohhot_saihan');
 
     expect(region.coord.lat).toBe(e.lat);
     expect(region.coord.lng).toBe(e.lng);
@@ -157,13 +157,12 @@ describe('Test City Utility', () => {
 
       const regionName = `${region.province.name}${region.city.name}${region.country.name}`;
       const regionPinyin = `${region.province.pinyin}${region.city.pinyin || ''}${region.country.pinyin || ''}`;
+      if (regionPinyin.indexOf(weatherCity.en) < 0) {
+        console.log(regionPinyin, weatherCity);
+      }
       expect(regionName.indexOf(weatherCity.cn)).toBeGreaterThanOrEqual(0);
       expect(regionPinyin.indexOf(weatherCity.en)).toBeGreaterThanOrEqual(0);
       expect(region.coord).not.toBeNull();
-
-      if (regionPinyin.indexOf(weatherCity.en) < 0) {
-        console.log(weatherCity);
-      }
     }
 
     for (let index = config.weatherCitys.length; index < regions.length; index += 1) {
@@ -213,7 +212,7 @@ describe('Test City Utility', () => {
     expect(province.id).toBe('150000000000');
 
     const fileName = aliasFromRegion(region);
-    expect(fileName).toBe('neimenggu_xingan_wulanhaote');
+    expect(fileName).toBe('innermongolia_xingan_ulanhot');
 
     expect(coord.lat).toBe('46.07865434358189');
     expect(coord.lng).toBe('122.099622351983');

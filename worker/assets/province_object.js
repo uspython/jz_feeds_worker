@@ -24,7 +24,7 @@ const provinceObject = {
   },
   '150000000000': {
     'name': '内蒙古自治区',
-    'pinyin': 'neimenggu',
+    'pinyin': 'innermongolia',
     'id': '150000000000',
   },
   '210000000000': {
