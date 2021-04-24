@@ -66,7 +66,7 @@ const bree = new Bree({
       interval: `${process.env.WEATHER_JOB_INTERVAL || '1h'}`,
     },
     {
-      name: 'huhehaote',
+      name: 'hohhot',
       timeout: '11m',
       interval: '1h',
     },
