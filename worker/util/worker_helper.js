@@ -209,8 +209,7 @@ function aliasFromRegion(region) {
   return fileName;
 }
 
-// TODO: (Jeff) update function name
-function configCitiesJson() {
+function remoteConfigJson() {
   const weatherRegions = config.weatherCitys
     .map(({ cn }) => regionFromWeather(cn));
   const apiRegions = config.uploadCities
@@ -221,7 +220,7 @@ function configCitiesJson() {
     success: true,
     message: '',
     data: {
-      regions,
+      config: { regions },
     },
   };
 }
@@ -312,7 +311,7 @@ module.exports.getCityCodeWith = getCityCodeWith;
 module.exports.searchFromCountry = searchFromCountry;
 module.exports.regionFromWeather = regionFromWeather;
 module.exports.regionFromId = regionFromId;
-module.exports.configCitiesJson = configCitiesJson;
+module.exports.remoteConfigJson = remoteConfigJson;
 module.exports.callbackFromWeather = callbackFromWeather;
 module.exports.callbackHuhehaote = callbackHuhehaote;
 module.exports.aliasFromRegion = aliasFromRegion;

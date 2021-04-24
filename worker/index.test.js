@@ -15,7 +15,7 @@ const {
   searchFromCountry,
   regionFromWeather,
   regionFromId,
-  configCitiesJson,
+  remoteConfigJson,
   aliasFromRegion,
 } = require('./util/worker_helper');
 const config = require('./config');
@@ -143,7 +143,7 @@ describe('Test City Utility', () => {
   });
 
   test('should get config region', () => {
-    const { data: { regions } } = configCitiesJson();
+    const { data: { config: { regions } } } = remoteConfigJson();
 
     // console.log(JSON.stringify(citys));
 

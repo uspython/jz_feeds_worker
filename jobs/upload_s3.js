@@ -2,7 +2,7 @@ const Publisher = require('../publisher');
 const config = require('../worker/config');
 const logger = require('../worker/logger');
 const {
-  regionFromWeather, regionFromId, configCitiesJson,
+  regionFromWeather, regionFromId, remoteConfigJson,
 } = require('../worker/util/worker_helper');
 const { connect, disconnect } = require('../worker/util/dbhelper');
 
@@ -46,7 +46,7 @@ async function doneWithAPI(apiConfigCities) {
 
 // Upload Config Data Json
 async function doneWithCityConfig() {
-  const cityConfig = configCitiesJson();
+  const cityConfig = remoteConfigJson();
   const regionPlaceHolder = regionFromWeather('北京');
   let p = new Publisher(regionPlaceHolder, s3bucket);
   const r = await p.uploadConfigJson(cityConfig);
