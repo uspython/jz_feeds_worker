@@ -16,6 +16,7 @@ async function start() {
     await connect();
     await invoke();
     await disconnect();
+    process.exit(0);
   } catch (err) {
     logger.error({ err });
   }
