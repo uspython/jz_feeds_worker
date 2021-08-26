@@ -51,7 +51,6 @@ class Publisher {
         __v: 0,
         _id: 0,
         createdAt: 0,
-        updatedAt: 0,
         cityId: 0,
         pollenCount: 0,
       })
@@ -74,7 +73,6 @@ class Publisher {
         __v: 0,
         _id: 0,
         createdAt: 0,
-        updatedAt: 0,
         cityId: 0,
         pollenCount: 0,
       })
@@ -156,8 +154,8 @@ class Publisher {
       Body: bodyJsonGz,
       ContentType: 'application/json',
       ContentEncoding: 'gzip',
-      // Cache 5m
-      CacheControl: `public, max-age=${60 * 5}`,
+      // Cache 1h
+      CacheControl: `max-age=3600`,
     };
 
     const { ETag } = await this.s3.send(new PutObjectCommand(uploadParams));
