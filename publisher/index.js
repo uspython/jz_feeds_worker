@@ -155,7 +155,7 @@ class Publisher {
       ContentType: 'application/json',
       ContentEncoding: 'gzip',
       // Cache 1h
-      CacheControl: `max-age=3600`,
+      CacheControl: 'Cache-Control:no-cache=Set-Cookie;max-age=3600',
     };
 
     const { ETag } = await this.s3.send(new PutObjectCommand(uploadParams));
@@ -191,7 +191,7 @@ class Publisher {
       Body: bodyJsonGz,
       ContentType: 'application/json',
       ContentEncoding: 'gzip',
-      // Cache 5m
+      // Cache 3600s
       CacheControl: `public, max-age=${60 * 5}`,
     };
 
@@ -219,8 +219,8 @@ class Publisher {
       Body: bodyJsonGz,
       ContentType: 'application/json',
       ContentEncoding: 'gzip',
-      // Cache 5m
-      CacheControl: `public, max-age=${3600 * 2}`,
+      // Cache 3600s
+      CacheControl: 'Cache-Control:no-cache=Set-Cookie;max-age=3600',
     };
 
     const { ETag } = await this.s3.send(new PutObjectCommand(uploadParams));
