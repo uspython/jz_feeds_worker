@@ -223,6 +223,8 @@ class Publisher {
       CacheControl: 'Cache-Control:no-cache=Set-Cookie;max-age=3600',
     };
 
+    
+
     const { ETag } = await this.s3.send(new PutObjectCommand(uploadParams));
 
     this.s3.destroy();
