@@ -11,7 +11,7 @@ const {
   getCityCodeWith,
   callbackHuhehaote,
   WeatherDefaultDate,
-  regionFromId
+  regionFromId,
 } = require('../util/worker_helper');
 
 dayjs.extend(utc);

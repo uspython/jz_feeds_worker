@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const logger = require('../logger');
 
 const Feed = require('../models/feed');
+const WeatherFeed = require('../models/weather_feed');
 
 function addMarsValue(countStr) {
   let ret = parseInt(countStr, 10) || 0;
@@ -121,6 +122,17 @@ async function queryCityFeeds(filter) {
   }
 }
 
+function addWeatherFeed(theWeatherFeed) {
+  Feed.create(theWeatherFeed, (err) => {
+    if (err) {
+      logger.warn(err);
+      return;
+    }
+
+    logger.info(`New Feed Created, ${theWeatherFeed}`);
+  });
+}
+
 module.exports.connect = connect;
 module.exports.addOneFeed = addOneFeed;
 module.exports.addManyFeeds = addManyFeeds;
@@ -130,3 +142,5 @@ module.exports.disconnect = disconnect;
 module.exports.queryCityFeeds = queryCityFeeds;
 module.exports.Feed = Feed;
 module.exports.addMarsValue = addMarsValue;
+module.exports.WeatherFeed = WeatherFeed;
+module.exports.addWeatherFeed = addWeatherFeed;

@@ -5,7 +5,9 @@ const utc = require('dayjs/plugin/utc');
 const config = require('./config');
 const fetch = require('./fetch');
 const logger = require('./logger');
-const { addManyFeeds, Feed, alterFeed } = require('./util/dbhelper');
+const {
+  addManyFeeds, Feed, alterFeed, WeatherFeed,
+} = require('./util/dbhelper');
 
 const {
   getCityCodeWith,
