@@ -123,7 +123,7 @@ async function queryCityFeeds(filter) {
 }
 
 function addWeatherFeed(theWeatherFeed) {
-  Feed.create(theWeatherFeed, (err) => {
+  WeatherFeed.create(theWeatherFeed, (err) => {
     if (err) {
       logger.warn(err);
       return;
@@ -131,6 +131,23 @@ function addWeatherFeed(theWeatherFeed) {
 
     logger.info(`New Feed Created, ${theWeatherFeed}`);
   });
+}
+
+async function queryWeatherFeed(filter) {
+  // const { cityId, releaseDate } = theFeed;
+
+  try {
+    const ret = await WeatherFeed.find({ ...filter })
+      .lean()
+      .sort({ dt: -1 })
+      .exec();
+
+    return ret;
+  } catch (e) {
+    logger.info(`query weather feeds error${e}`);
+
+    return [];
+  }
 }
 
 module.exports.connect = connect;
@@ -144,3 +161,4 @@ module.exports.Feed = Feed;
 module.exports.addMarsValue = addMarsValue;
 module.exports.WeatherFeed = WeatherFeed;
 module.exports.addWeatherFeed = addWeatherFeed;
+module.exports.queryWeatherFeed = queryWeatherFeed;

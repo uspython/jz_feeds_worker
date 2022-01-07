@@ -92,6 +92,11 @@ const WeatherFeedSchema = new Schema({
   cod: {
     type: 'Number',
   },
+}, {
+  timestamps: {
+    createdAt: 'createdAt',
+    updateAt: 'updateAt',
+  },
 });
 
 const WeatherFeed = model('WeatherFeed', WeatherFeedSchema);

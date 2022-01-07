@@ -1,13 +1,8 @@
 import dayjs from 'dayjs';
 import {
-  connect,
-  addOneFeed,
-  addManyFeeds,
-  alterFeed,
-  deleteFeed,
-  queryCityFeeds,
-  disconnect,
-  addWeatherFeed,
+  addManyFeeds, addOneFeed, addWeatherFeed,
+  alterFeed, connect, deleteFeed, disconnect, queryCityFeeds,
+  queryWeatherFeed,
 } from './dbhelper';
 
 const Feed = require('../models/feed');
@@ -116,8 +111,17 @@ describe('Test dbhelper', () => {
   describe('test weather curd', () => {
     const testFeed = JSON.parse('{"coord":{"lon":122.0833,"lat":46.0833},"weather":[{"id":800,"main":"Clear","description":"clear sky","icon":"01n"}],"base":"stations","main":{"temp":254.73,"feels_like":254.73,"temp_min":254.73,"temp_max":254.73,"pressure":1030,"humidity":95,"sea_level":1030,"grnd_level":990},"visibility":10000,"wind":{"speed":1.16,"deg":290,"gust":1.07},"clouds":{"all":8},"dt":1641483488,"sys":{"country":"CN","sunrise":1641425611,"sunset":1641457240},"timezone":28800,"id":2034312,"name":"Ulanhot","cod":200}');
 
-    test('Insert Feed', () => {
+    test('Insert Weather Feed', () => {
       expect(() => addWeatherFeed(testFeed)).not.toThrow(Error);
+    });
+
+    test('should reture not empty', async (done) => {
+      const results = await queryWeatherFeed({ id: 2034312 });
+      const [{ id }] = results;
+
+      expect(results.length).not.toBe(0);
+      expect(id).toBe(2034312);
+      done();
     });
   });
 
