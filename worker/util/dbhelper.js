@@ -110,6 +110,7 @@ async function queryCityFeeds(filter) {
 
   try {
     const ret = await Feed.find({ ...filter })
+      .limit(100)
       .lean()
       .sort({ releaseDate: -1 })
       .exec();
@@ -133,11 +134,11 @@ function addWeatherFeed(theWeatherFeed) {
   });
 }
 
+// filter: { name: 'john', age: { $gte: 18 } }
 async function queryWeatherFeed(filter) {
-  // const { cityId, releaseDate } = theFeed;
-
   try {
     const ret = await WeatherFeed.find({ ...filter })
+      .limit(100)
       .lean()
       .sort({ dt: -1 })
       .exec();

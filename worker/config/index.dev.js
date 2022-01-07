@@ -1,6 +1,8 @@
 const config = {
   logLevel: 'error',
   url: ' ',
+  openWeatherApi: '',
+  openWeatherApiToken: 'token',
   params: {
     a: 'param',
   },
@@ -9,7 +11,9 @@ const config = {
   fileKeyNameSurfix: 'your_s3_file_name.json',
   weatherUrl: ' ',
   weatherCitys: [
-    { code: 'beijing', en: 'beijing', cn: '北京' },
+    {
+      code: 'beijing', en: 'beijing', cn: '北京', weatherid: '1816670',
+    },
   ],
   specificRegions: [
     {

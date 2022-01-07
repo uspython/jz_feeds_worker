@@ -4,6 +4,8 @@ import {
   alterFeed, connect, deleteFeed, disconnect, queryCityFeeds,
   queryWeatherFeed,
 } from './dbhelper';
+import fetch from '../fetch';
+import config from '../config';
 
 const Feed = require('../models/feed');
 
@@ -113,6 +115,42 @@ describe('Test dbhelper', () => {
 
     test('Insert Weather Feed', () => {
       expect(() => addWeatherFeed(testFeed)).not.toThrow(Error);
+    });
+
+    test('should get weather feed from api, and insert to db', async (done) => {
+      try {
+        const url = config.openWeatherApi;
+        const requestParams = { id: 2034312, appid: config.openWeatherApiToken };
+
+        const { status, statusText, data } = await fetch(
+          'GET',
+          url,
+          null,
+          requestParams,
+        );
+
+        if (status === 200 || statusText === 'OK') {
+          const aWeatherFeed = data;
+          expect(aWeatherFeed.dt).not.toBeNull();
+
+          const results = await queryWeatherFeed({ id: 2034312 });
+          const [{ id, dt }] = results;
+
+          expect(aWeatherFeed.dt).toBeGreaterThan(dt);
+          expect(id).toBe(aWeatherFeed.id);
+
+          if (!results || results.length === 0) {
+            addWeatherFeed(aWeatherFeed);
+          } else if (aWeatherFeed.dt > dt) {
+            addWeatherFeed(aWeatherFeed);
+          }
+
+          done();
+        }
+      } catch (error) {
+        expect(error).toBeNull();
+        done(error);
+      }
     });
 
     test('should reture not empty', async (done) => {
