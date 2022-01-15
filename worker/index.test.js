@@ -286,6 +286,7 @@ describe('Test JZFeedWorker', () => {
 
   test('month range should before (NOW + 1Day)', async () => {
     const testRegion = regionFromWeather('烟台');
+    console.log('[testRegion] ', JSON.stringify(testRegion));
     const today = dayjs().startOf('day').add(8, 'hours');
 
     const newFeed = {

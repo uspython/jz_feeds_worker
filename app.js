@@ -61,6 +61,11 @@ const bree = new Bree({
   // logger: new Cabin(),
   jobs: [
     {
+      name: 'open_weather',
+      timeout: '5m',
+      interval: `${process.env.WEATHER_JOB_INTERVAL || '1h'}`,
+    },
+    {
       name: 'weather',
       timeout: '30m',
       interval: `${process.env.WEATHER_JOB_INTERVAL || '1h'}`,

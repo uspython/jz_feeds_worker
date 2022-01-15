@@ -6,7 +6,7 @@ const config = require('./config');
 const fetch = require('./fetch');
 const logger = require('./logger');
 const {
-  addManyFeeds, Feed, alterFeed, WeatherFeed,
+  addManyFeeds, Feed, alterFeed, queryWeatherFeed, addWeatherFeed,
 } = require('./util/dbhelper');
 
 const {
@@ -250,6 +250,54 @@ type: ${this.scheduleType} \
 count: ${count}`);
 
     return count;
+  }
+
+  async fetchWeatherFeedWith(weatherid) {
+    const url = config.openWeatherApi;
+    const requestParams = { id: weatherid, appid: config.openWeatherApiToken };
+
+    const { status, statusText, data } = await fetch(
+      'GET',
+      url,
+      null,
+      requestParams,
+    );
+
+    if (status === 200 || statusText === 'OK') {
+      const aWeatherFeed = data;
+
+      if (!aWeatherFeed) {
+        throw new Error('[fetchWeatherFeedWith] response data is Empty');
+      }
+
+      const results = await queryWeatherFeed({ id: weatherid });
+
+      let ret = 0;
+      if (!results || results.length === 0) {
+        addWeatherFeed(aWeatherFeed);
+        ret += 1;
+      } else {
+        const [{ id = 0, dt }] = results;
+
+        if (id !== aWeatherFeed.id) {
+          throw new Error('[fetchWeatherFeedWith] response wrone City');
+        }
+
+        // 超过半小时可以插入新数据
+        if ((aWeatherFeed.dt - dt) > 1800) {
+          addWeatherFeed(aWeatherFeed);
+          ret += 1;
+        }
+      }
+
+      logger.info(`\
+[Worker]: Worker fetchWeatherFeedWith, \
+city: ${this.region.city.name}, ${this.region.country.name} \
+`);
+      return ret;
+    }
+
+    return 0;
   }
 }
 

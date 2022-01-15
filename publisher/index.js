@@ -64,7 +64,7 @@ class Publisher {
     const results = await Feed.find(
       {
         cityId: this.region.city.id,
-        releaseDate: { $gte: dayjs().add(-3, 'month').startOf('day').add(8, 'hours') },
+        releaseDate: { $gte: dayjs().add(-6, 'month').startOf('day').add(8, 'hours') },
       },
       null,
       { sort: { releaseDate: -1 } },
@@ -222,8 +222,6 @@ class Publisher {
       // Cache 3600s
       CacheControl: 'Cache-Control:no-cache=Set-Cookie;max-age=3600',
     };
-
-    
 
     const { ETag } = await this.s3.send(new PutObjectCommand(uploadParams));
 

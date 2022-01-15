@@ -1,11 +1,11 @@
 import dayjs from 'dayjs';
+import config from '../config';
+import fetch from '../fetch';
 import {
   addManyFeeds, addOneFeed, addWeatherFeed,
   alterFeed, connect, deleteFeed, disconnect, queryCityFeeds,
   queryWeatherFeed,
 } from './dbhelper';
-import fetch from '../fetch';
-import config from '../config';
 
 const Feed = require('../models/feed');
 
@@ -148,6 +148,7 @@ describe('Test dbhelper', () => {
           done();
         }
       } catch (error) {
+        console.log(error);
         expect(error).toBeNull();
         done(error);
       }
