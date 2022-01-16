@@ -4,7 +4,9 @@ const logger = require('../worker/logger');
 const {
   regionFromWeather, regionFromId, remoteConfigJson,
 } = require('../worker/util/worker_helper');
-const { connect, disconnect } = require('../worker/util/dbhelper');
+const {
+  connect, disconnect,
+} = require('../worker/util/dbhelper');
 
 const s3bucket = {
   name: config.bucketName,
@@ -22,8 +24,9 @@ async function upload(region) {
 }
 
 // Upload Weather Cities' Pollen Json
-async function doneWithWeather(cityName) {
+async function doneWithWeather(cityName, weatherid) {
   const theRegion = regionFromWeather(cityName);
+  theRegion.weatherid = weatherid;
 
   const ret = await upload(theRegion);
   return ret;
@@ -61,9 +64,9 @@ async function doneWithCityConfig() {
 
     logger.info('==========> Start upload json from weathers');
     for (let index = 0; index < config.weatherCitys.length; index += 1) {
-      const { cn } = config.weatherCitys[index];
+      const { cn, weatherid } = config.weatherCitys[index];
       // eslint-disable-next-line no-await-in-loop
-      await doneWithWeather(cn);
+      await doneWithWeather(cn, weatherid);
     }
 
     logger.info('==========> Start upload json from api');

@@ -8,6 +8,7 @@ const fs = require('fs');
 const _ = require('lodash');
 const config = require('../worker/config');
 const Feed = require('../worker/models/feed');
+const WeatherFeed = require('../worker/models/weather_feed');
 const logger = require('../worker/logger');
 const { aliasFromRegion } = require('../worker/util/worker_helper');
 
@@ -39,7 +40,7 @@ class Publisher {
   }
 
   async getRawJson() {
-    const results = await Feed.find(
+    const pollenResults = await Feed.find(
       {
         cityId: this.region.city.id,
         releaseDate: { $gte: dayjs().add(-6, 'day').startOf('day').add(8, 'hours') },
@@ -57,11 +58,29 @@ class Publisher {
       .lean()
       .exec();
 
-    return results;
+    const openWeatherResults = await WeatherFeed
+      .find({
+        id: this.region.weatherid,
+        dt: { $gte: dayjs().add(-12, 'hours').unix() },
+      }, null, {
+        sort: { dt: -1 },
+      })
+      .select({
+        __v: 0,
+        _id: 0,
+        createdAt: 0,
+        updateAt: 0,
+      })
+      .lean()
+      .exec();
+
+    return {
+      pollenResults, openWeatherResults,
+    };
   }
 
   async getMockRawJson() {
-    const results = await Feed.find(
+    const pollenResults = await Feed.find(
       {
         cityId: this.region.city.id,
         releaseDate: { $gte: dayjs().add(-6, 'month').startOf('day').add(8, 'hours') },
@@ -80,7 +99,25 @@ class Publisher {
       .lean()
       .exec();
 
-    return results;
+    const openWeatherResults = await WeatherFeed
+      .find({
+        id: this.region.weatherid,
+        dt: { $gte: dayjs().add(-12, 'hours').unix() },
+      }, null, {
+        sort: { dt: -1 },
+      })
+      .select({
+        __v: 0,
+        _id: 0,
+        createdAt: 0,
+        updateAt: 0,
+      })
+      .lean()
+      .exec();
+
+    return {
+      pollenResults, openWeatherResults,
+    };
   }
 
   /**
@@ -92,14 +129,20 @@ class Publisher {
 }
 */
   mapToApiFromJson(json) {
-    const groupByRegion = _.groupBy(json, 'region.countryId');
+    const { pollenResults = [], openWeatherResults = [] } = json;
+    const groupByRegion = _.groupBy(pollenResults, 'region.countryId');
     const theRegion = this.region;
 
     const pollenData = Object.keys(groupByRegion)
-      .map((countryId) => ({
-        latest: groupByRegion[countryId],
-        region: theRegion,
-      }));
+      .map((countryId) => {
+        const latest = groupByRegion[countryId];
+        const [latestWeather = null] = openWeatherResults;
+        return {
+          latest,
+          latestWeather,
+          region: theRegion,
+        };
+      });
 
     return {
       success: true,
@@ -130,14 +173,14 @@ class Publisher {
   }
 
   async uploadJson() {
-    const jsonResults = await this.getRawJson();
+    const { pollenResults = [], openWeatherResults = [] } = await this.getRawJson();
 
-    if (jsonResults.length === 0) {
+    if (pollenResults.length === 0) {
       logger.info(`${this.region.city.name} have not content in last 7 days.`);
       return 0;
     }
 
-    const str = JSON.stringify(this.mapToApiFromJson(jsonResults));
+    const str = JSON.stringify(this.mapToApiFromJson({ pollenResults, openWeatherResults }));
 
     if (process.env.NODE_ENV === 'development') {
       console.log(str);
@@ -170,15 +213,13 @@ class Publisher {
   }
 
   async uploadMockJson() {
-    const jsonResults = await this.getMockRawJson();
+    const { pollenResults = [], openWeatherResults = [] } = await this.getMockRawJson();
 
-    if (jsonResults.length === 0) {
+    if (pollenResults.length === 0) {
       throw new Error(`${this.region.city.name} have not content in last 3 months.`);
     }
 
-    const str = JSON.stringify(this.mapToApiFromJson(jsonResults));
-
-    console.log(str);
+    const str = JSON.stringify(this.mapToApiFromJson({ pollenResults, openWeatherResults }));
 
     const buffer = Buffer.from(str, 'utf8');
     const bodyJsonGz = pako.gzip(buffer);

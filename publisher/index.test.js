@@ -1,12 +1,12 @@
 import Publisher from '.';
 import config from '../worker/config';
 import {
-  regionFromWeather, remoteConfigJson,
-} from '../worker/util/worker_helper';
-import {
   connect,
   disconnect,
 } from '../worker/util/dbhelper';
+import {
+  regionFromWeather, remoteConfigJson,
+} from '../worker/util/worker_helper';
 
 const testBucket = {
   name: config.bucketName,
@@ -24,6 +24,7 @@ describe('Test AWS Publisher', () => {
   });
 
   const theRegion = regionFromWeather('包头');
+  theRegion.weatherid = 2038432;
   const publisher = new Publisher(theRegion, testBucket);
 
   test('should return buckets', async () => {
@@ -33,9 +34,10 @@ describe('Test AWS Publisher', () => {
   });
 
   test('should get pollen json in latest 7 days', async () => {
-    const j = await publisher.getMockRawJson();
+    const { pollenResults = [], openWeatherResults = [] } = await publisher.getMockRawJson();
 
-    expect(j.length).not.toBe(0);
+    expect(pollenResults.length).not.toBe(0);
+    expect(openWeatherResults.length).not.toBe(0);
   });
 
   test("should upload city's json file to s3 with gzip", async () => {

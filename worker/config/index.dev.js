@@ -12,7 +12,7 @@ const config = {
   weatherUrl: ' ',
   weatherCitys: [
     {
-      code: 'beijing', en: 'beijing', cn: '北京', weatherid: '1816670',
+      code: 'beijing', en: 'beijing', cn: '北京', weatherid: 1816670,
     },
   ],
   specificRegions: [
