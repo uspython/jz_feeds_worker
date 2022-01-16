@@ -7,7 +7,7 @@ const fetch = require('./fetch');
 const logger = require('./logger');
 const {
   addManyFeeds, Feed, alterFeed,
-  queryWeatherFeed, addWeatherFeed
+  queryWeatherFeed, addWeatherFeed,
 } = require('./util/dbhelper');
 
 const {

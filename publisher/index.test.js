@@ -2,12 +2,11 @@ import dayjs from 'dayjs';
 import Publisher from '.';
 import config from '../worker/config';
 import {
-  connect,
+  addOneFeed, connect,
   disconnect,
-  addOneFeed,
 } from '../worker/util/dbhelper';
 import {
-  regionFromWeather, remoteConfigJson, regionFromId, aliasFromRegion,
+  aliasFromRegion, regionFromId, regionFromWeather, remoteConfigJson,
 } from '../worker/util/worker_helper';
 
 const testBucket = {

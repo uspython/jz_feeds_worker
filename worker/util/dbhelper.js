@@ -3,6 +3,7 @@ const logger = require('../logger');
 
 const Feed = require('../models/feed');
 const WeatherFeed = require('../models/weather_feed');
+const { regionFromWeather } = require('./worker_helper');
 
 function addMarsValue(countStr) {
   let ret = parseInt(countStr, 10) || 0;
@@ -44,10 +45,16 @@ async function disconnect() {
 }
 
 function addOneFeed(theFeed) {
-  const { pollenCount } = theFeed;
+  const { pollenCount, cityId } = theFeed;
+  // 只有北京需要 marspollencount
+  const beijing = regionFromWeather('北京');
+  let marsPollenCount = pollenCount;
+  if (cityId === beijing.city.id) {
+    marsPollenCount = addMarsValue(pollenCount);
+  }
 
   Feed.create({
-    marsPollenCount: addMarsValue(pollenCount),
+    marsPollenCount,
     ...theFeed,
   }, (err) => {
     if (err) {
