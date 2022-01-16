@@ -40,10 +40,15 @@ class Publisher {
   }
 
   async getRawJson() {
+    const regionParams = this.region.country.id === this.region.city.id
+      ? {}
+      : { 'region.countryId': this.region.country.id };
+
     const pollenResults = await Feed.find(
       {
         cityId: this.region.city.id,
         releaseDate: { $gte: dayjs().add(-6, 'day').startOf('day').add(8, 'hours') },
+        ...regionParams,
       },
       null,
       { sort: { releaseDate: -1 } },
@@ -80,11 +85,18 @@ class Publisher {
   }
 
   async getMockRawJson() {
+    const regionParams = this.region.country.id === this.region.city.id
+      ? {}
+      : { 'region.countryId': this.region.country.id };
+
+    const params = {
+      cityId: this.region.city.id,
+      releaseDate: { $gte: dayjs().add(-6, 'month').startOf('day').add(8, 'hours') },
+      ...regionParams,
+    };
+
     const pollenResults = await Feed.find(
-      {
-        cityId: this.region.city.id,
-        releaseDate: { $gte: dayjs().add(-6, 'month').startOf('day').add(8, 'hours') },
-      },
+      params,
       null,
       { sort: { releaseDate: -1 } },
     )

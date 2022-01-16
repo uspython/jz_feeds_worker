@@ -68,48 +68,6 @@ class JZHuhehaoteWorker {
     return { from: nextDay, to: nextDay };
   }
 
-  async getMonthRange() {
-    const { city: { id } } = this.region;
-    const cityId = id;
-
-    if (!cityId) {
-      return null;
-    }
-
-    let from = WeatherDefaultDate;
-    let to = from;
-    const isExisted = await Feed.exists({ cityId });
-
-    if (!isExisted) {
-      // From 2020-03-01
-      const fromDate = dayjs(from, DateFormatString);
-
-      const today = dayjs().startOf('day');
-      const endOfMonth = fromDate.endOf('month');
-
-      to = endOfMonth.isAfter(today)
-        ? today.format(DateFormatString)
-        : endOfMonth.startOf('day').format(DateFormatString);
-    } else {
-      const { releaseDate } = await Feed.findOne(
-        { cityId },
-        {},
-        { sort: { releaseDate: -1 } },
-      ).lean().exec();
-
-      if (releaseDate) {
-        const d = dayjs(releaseDate).add(1, 'day');
-        from = d.format(DateFormatString);
-        const endOfMonth = d.endOf('month');
-        to = endOfMonth.isAfter(dayjs().startOf('day'))
-          ? from
-          : endOfMonth.startOf('day').format(DateFormatString);
-      }
-    }
-
-    return { from, to };
-  }
-
   async fetchRawData() {
     // const url = `${config.weatherUrl}`;
 

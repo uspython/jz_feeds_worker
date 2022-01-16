@@ -33,12 +33,12 @@ async function doneWithWeather(cityName, weatherid) {
 }
 
 // Upload Specific API Pollen Data
-async function doneWithAPI(apiConfigCities) {
+async function doneWithAPI(apiConfigCities, weatherid) {
   let ret = 0;
   for (let index = 0; index < apiConfigCities.length; index += 1) {
     const { provinceId, cityId, countryId } = apiConfigCities[index];
     const region = regionFromId(provinceId, cityId, countryId);
-
+    region.weatherid = weatherid;
     // eslint-disable-next-line no-await-in-loop
     const r = await upload(region);
     ret += r;
@@ -65,12 +65,15 @@ async function doneWithCityConfig() {
     logger.info('==========> Start upload json from weathers');
     for (let index = 0; index < config.weatherCitys.length; index += 1) {
       const { cn, weatherid } = config.weatherCitys[index];
+      // 上传 Pollen Citys Config file 的数据
       // eslint-disable-next-line no-await-in-loop
       await doneWithWeather(cn, weatherid);
     }
 
+    // 上传 特殊 API 的数据，如：呼和浩特市赛罕区
     logger.info('==========> Start upload json from api');
-    await doneWithAPI(config.uploadCities);
+    const wid = 1529102; // 呼和浩特
+    await doneWithAPI(config.uploadCities, wid);
 
     await disconnect();
 
