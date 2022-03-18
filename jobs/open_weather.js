@@ -26,8 +26,10 @@ async function start() {
     }
 
     await disconnect();
+    process.exit(0);
   } catch (err) {
     logger.error({ err });
+    process.exit(0);
   }
 }
 
