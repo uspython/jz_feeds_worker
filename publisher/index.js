@@ -273,7 +273,7 @@ class Publisher {
       ContentType: 'application/json',
       ContentEncoding: 'gzip',
       // Cache 3600s
-      CacheControl: 'Cache-Control:no-cache=Set-Cookie;max-age=3600',
+      CacheControl: 'no-cache=Set-Cookie, max-age=3600',
     };
 
     const { ETag } = await this.s3.send(new PutObjectCommand(uploadParams));
