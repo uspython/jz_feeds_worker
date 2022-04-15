@@ -30,7 +30,7 @@ function cityFrom(cnName) {
     .reduce((p, c) => p.concat(c), [])
     .filter((c) => c.province.indexOf(cnName) > -1 || c.name.indexOf(cnName) > -1);
 
-  if (citys.length === 1) {
+  if (citys.length >= 1) {
     return citys[0];
   }
 
@@ -42,7 +42,7 @@ function cityFromCityId(cityId) {
     .reduce((p, c) => p.concat(c), [])
     .filter((c) => c.id === cityId);
 
-  if (citys.length === 1) {
+  if (citys.length >= 1) {
     return citys[0];
   }
 

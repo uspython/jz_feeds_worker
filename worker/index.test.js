@@ -196,6 +196,94 @@ describe('Test City Utility', () => {
     expect(coord.lng).toBe('118.28157403570837');
   });
 
+  test('should get region with city name 西宁', () => {
+    const {
+      province, city, country, coord,
+    } = regionFromWeather('西宁');
+    const testCity = cityFrom('西宁');
+    const testProvince = provinceFrom(testCity);
+
+    expect(province).not.toBeNull();
+    expect(city).not.toBeNull();
+    expect(country).not.toBeNull();
+
+    expect(country.id).toBe(testCity.id);
+    expect(city.name).toBe(testCity.name);
+    expect(city.id).toBe(testCity.id);
+    expect(province.name).toBe(testProvince.name);
+    expect(province.id).toBe(testProvince.id);
+
+    expect(province.name).toBe('青海省');
+    expect(coord.lat).toBe('36.62338469651661');
+    expect(coord.lng).toBe('101.78445017050855');
+  });
+
+  test('should get region with city name 重庆', () => {
+    // const {
+    //   province, city, country, coord,
+    // } = regionFromWeather('重庆');
+    const testCity = cityFrom('重庆');
+    const testProvince = provinceFrom(testCity);
+
+    expect(province).not.toBeNull();
+    expect(city).not.toBeNull();
+    expect(country).not.toBeNull();
+
+    expect(country.id).toBe(testCity.id);
+    expect(city.name).toBe(testCity.name);
+    expect(city.id).toBe(testCity.id);
+    expect(province.name).toBe(testProvince.name);
+    expect(province.id).toBe(testProvince.id);
+
+    expect(province.name).toBe('重庆市');
+    expect(coord.lat).toBe('36.62338469651661');
+    expect(coord.lng).toBe('101.78445017050855');
+  });
+
+  test('should get region with city name 沧州', () => {
+    const {
+      province, city, country, coord,
+    } = regionFromWeather('沧州');
+    const testCity = cityFrom('沧州');
+    const testProvince = provinceFrom(testCity);
+
+    expect(province).not.toBeNull();
+    expect(city).not.toBeNull();
+    expect(country).not.toBeNull();
+
+    expect(country.id).toBe(testCity.id);
+    expect(city.name).toBe(testCity.name);
+    expect(city.id).toBe(testCity.id);
+    expect(province.name).toBe(testProvince.name);
+    expect(province.id).toBe(testProvince.id);
+
+    expect(province.name).toBe('河北省');
+    expect(coord.lat).toBe('38.310215141107044');
+    expect(coord.lng).toBe('116.84558075595014');
+  });
+
+  test('should get region with city name 西宁', () => {
+    const {
+      province, city, country, coord,
+    } = regionFromWeather('西宁');
+    const testCity = cityFrom('西宁');
+    const testProvince = provinceFrom(testCity);
+
+    expect(province).not.toBeNull();
+    expect(city).not.toBeNull();
+    expect(country).not.toBeNull();
+
+    expect(country.id).toBe(testCity.id);
+    expect(city.name).toBe(testCity.name);
+    expect(city.id).toBe(testCity.id);
+    expect(province.name).toBe(testProvince.name);
+    expect(province.id).toBe(testProvince.id);
+
+    expect(province.name).toBe('青海省');
+    expect(coord.lat).toBe('36.62338469651661');
+    expect(coord.lng).toBe('101.78445017050855');
+  });
+
   test('should get region with country name 1', () => {
     const region = regionFromWeather('乌兰浩特');
     const {
