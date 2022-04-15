@@ -120,7 +120,7 @@ describe('Test dbhelper', () => {
     test('should get weather feed from api, and insert to db', async (done) => {
       try {
         const url = config.openWeatherApi;
-        const requestParams = { id: 2034312, appid: config.openWeatherApiToken };
+        const requestParams = { id: 1529102, appid: config.openWeatherApiToken };
 
         const { status, statusText, data } = await fetch(
           'GET',
@@ -133,7 +133,7 @@ describe('Test dbhelper', () => {
           const aWeatherFeed = data;
           expect(aWeatherFeed.dt).not.toBeNull();
 
-          const results = await queryWeatherFeed({ id: 2034312 });
+          const results = await queryWeatherFeed({ id: 1529102 });
           const [{ id, dt }] = results;
 
           expect(aWeatherFeed.dt).toBeGreaterThan(dt);

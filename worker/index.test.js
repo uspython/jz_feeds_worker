@@ -219,9 +219,9 @@ describe('Test City Utility', () => {
   });
 
   test('should get region with city name 重庆', () => {
-    // const {
-    //   province, city, country, coord,
-    // } = regionFromWeather('重庆');
+    const {
+      province, city, country, coord,
+    } = regionFromWeather('重庆');
     const testCity = cityFrom('重庆');
     const testProvince = provinceFrom(testCity);
 
@@ -236,8 +236,8 @@ describe('Test City Utility', () => {
     expect(province.id).toBe(testProvince.id);
 
     expect(province.name).toBe('重庆市');
-    expect(coord.lat).toBe('36.62338469651661');
-    expect(coord.lng).toBe('101.78445017050855');
+    expect(coord.lat).toBe('29.568996245338923');
+    expect(coord.lng).toBe('106.55843415537664');
   });
 
   test('should get region with city name 沧州', () => {
