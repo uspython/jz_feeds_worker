@@ -50,7 +50,7 @@ class JZFeedWorker {
     });
 
     if (!isExisted) {
-      // From 2020-03-01
+      // From 2022-03-01
     } else {
       const { releaseDate } = await Feed.findOne(
         {
@@ -83,7 +83,7 @@ class JZFeedWorker {
     const isExisted = await Feed.exists({ cityId });
 
     if (!isExisted) {
-      // From 2020-03-01
+      // From 2022-03-01
       const fromDate = dayjs(from, DateFormatString);
 
       const today = dayjs().startOf('day');
@@ -139,7 +139,7 @@ class JZFeedWorker {
 
       if (status === 200 || statusText === 'OK') {
         // eslint-disable-next-line max-len
-        // callback({"dataList":[{"elenum":1,"week":"星期日","addTime":"2020-03-01","city":"","level":"","cityCode":"beijing","num":"","eletype":"花粉","content":""}]})
+        // callback({"dataList":[{"elenum":1,"week":"星期日","addTime":"2022-03-01","city":"","level":"","cityCode":"beijing","num":"","eletype":"花粉","content":""}]})
         const { dataList } = callbackFromWeather(data);
         return dataList || [];
       }
@@ -177,7 +177,7 @@ class JZFeedWorker {
     /**
      * [{
      * "elenum":1,"week":"星期日",
-     * "addTime":"2020-03-01",
+     * "addTime":"2022-03-01",
      * "city":"",
      * "level":"",
      * "cityCode":"beijing",

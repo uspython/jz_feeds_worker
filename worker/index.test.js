@@ -360,7 +360,7 @@ describe('Test JZFeedWorker', () => {
   });
 
   test('should get a datalist object with regex', () => {
-    const resp = 'callback({"dataList":[{"elenum":1,"week":"星期日","addTime":"2020-03-01","city":"","level":"","cityCode":"","num":"","eletype":"花粉","content":""}]})';
+    const resp = 'callback({"dataList":[{"elenum":1,"week":"星期日","addTime":"2022-03-01","city":"","level":"","cityCode":"","num":"","eletype":"花粉","content":""}]})';
 
     const r = callbackFromWeather(resp);
     expect(r).not.toBeNull();

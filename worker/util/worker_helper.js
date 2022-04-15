@@ -7,7 +7,7 @@ const logger = require('../logger');
 const coordinates = require('../assets/coordinate.json');
 
 // Start Date
-const WeatherDefaultDate = '2021-03-01';
+const WeatherDefaultDate = '2022-03-01';
 
 const wait = (ms) => new Promise((res) => setTimeout(res, ms));
 
@@ -238,7 +238,7 @@ function getCityCodeWith(cnName) {
 
 // For weather api only
 // eslint-disable-next-line max-len
-// resp:callback({"dataList":[{"elenum":1,"week":"星期日","addTime":"2020-03-01","city":"","level":"","cityCode":"","num":"","eletype":"花粉","content":""}]})
+// resp:callback({"dataList":[{"elenum":1,"week":"星期日","addTime":"2022-03-01","city":"","level":"","cityCode":"","num":"","eletype":"花粉","content":""}]})
 function callbackFromWeather(resp) {
   let jsonStr = '';
   const regex = /(?<=callback\()(.*)(?=\))/m;

@@ -51,7 +51,7 @@ class JZHuhehaoteWorker {
     const isExisted = await Feed.exists({ cityId, region: { provinceId, countryId } });
 
     if (!isExisted) {
-      // From 2020-03-01
+      // From 2022-03-01
     } else {
       const { releaseDate } = await Feed.findOne(
         { cityId, region: { provinceId, countryId } },
