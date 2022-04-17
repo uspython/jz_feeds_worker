@@ -47,7 +47,7 @@ class Publisher {
     const pollenResults = await Feed.find(
       {
         cityId: this.region.city.id,
-        releaseDate: { $gte: dayjs().add(-6, 'day').startOf('day').add(8, 'hours') },
+        releaseDate: { $gte: dayjs().add(-7, 'day').startOf('day').add(8, 'hours') },
         ...regionParams,
       },
       null,
@@ -89,14 +89,12 @@ class Publisher {
       ? {}
       : { 'region.countryId': this.region.country.id };
 
-    const params = {
-      cityId: this.region.city.id,
-      releaseDate: { $gte: dayjs().add(-6, 'month').startOf('day').add(8, 'hours') },
-      ...regionParams,
-    };
-
     const pollenResults = await Feed.find(
-      params,
+      {
+        cityId: this.region.city.id,
+        createdAt: { $gte: dayjs().add(-1, 'month').startOf('day').add(8, 'hours') },
+        ...regionParams,
+      },
       null,
       { sort: { releaseDate: -1 } },
     )

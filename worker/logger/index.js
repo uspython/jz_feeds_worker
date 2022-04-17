@@ -11,7 +11,7 @@ function isError(e) {
 const warnAboutWinston = format((info) => {
   if (isError(info)) {
     console.log(
-      'You should use logger.error(err). Please use logger.error({err}) instead.',
+      `You should use logger.error({err}). Please use logger.error({err}) instead. ${info}`,
     );
     return false;
   }

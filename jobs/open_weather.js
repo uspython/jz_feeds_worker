@@ -10,6 +10,11 @@ async function doneWithCity(cityName, weatherid) {
   logger.info(`[OpenWeatherAPI] start fetching...${theRegion.province.name}, ${theRegion.city.name}, ${theRegion.country.name}`);
   const w = new JZFeedWorker(theRegion, 'day');
   const r = await w.fetchWeatherFeedWith(weatherid);
+  const timeOut = new Promise((resolve, _) => {
+    setTimeout(resolve, 500, '');
+  });
+  await timeOut;
+
   logger.info(`[OpenWeatherAPI] ${cityName}, ${r} added`);
 }
 

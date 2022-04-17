@@ -384,7 +384,7 @@ describe('Test JZFeedWorker', () => {
         countryId: testRegion.country.id,
       },
       releaseDate: today.valueOf(),
-      pollenCount: '488',
+      pollenCount: '489',
       marsPollenCount: '88',
       forecastDate: today.add(1, 'day').valueOf(),
       forecastCount: '500 - 800',
