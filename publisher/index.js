@@ -47,7 +47,7 @@ class Publisher {
     const pollenResults = await Feed.find(
       {
         cityId: this.region.city.id,
-        releaseDate: { $gte: dayjs().add(-7, 'day').startOf('day').add(8, 'hours') },
+        releaseDate: { $gte: dayjs().add(-6, 'day').startOf('day').add(8, 'hours') },
         ...regionParams,
       },
       null,
@@ -208,7 +208,7 @@ class Publisher {
       ContentType: 'application/json',
       ContentEncoding: 'gzip',
       // Cache 1h
-      CacheControl: 'Cache-Control:no-cache=Set-Cookie;max-age=3600',
+      CacheControl: 'no-cache=Set-Cookie,max-age=3600',
     };
 
     const { ETag } = await this.s3.send(new PutObjectCommand(uploadParams));
@@ -271,7 +271,7 @@ class Publisher {
       ContentType: 'application/json',
       ContentEncoding: 'gzip',
       // Cache 3600s
-      CacheControl: 'no-cache=Set-Cookie, max-age=3600',
+      CacheControl: 'no-cache=Set-Cookie,max-age=3600',
     };
 
     const { ETag } = await this.s3.send(new PutObjectCommand(uploadParams));
