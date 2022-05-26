@@ -3,5 +3,5 @@ syntax = "proto3";
 message PollenResponse {
   bool success = 1;
   string message = 2;
-  RespData data = 3;
+  int32 data = 3;
 }
