@@ -16,7 +16,9 @@ async function upload(region) {
   const { province, city, country: { name: countryName = '' } = { name: '' } } = region;
   logger.info(`[UploadS3] start Publisher...${province.name}, ${city.name}, ${countryName || ''}`);
   let p = new Publisher(region, s3bucket);
-  const r = await p.uploadJson();
+  // const r = await p.uploadJson();
+  const r = await p.uploadProtoBuf();
+
   logger.info(`[UploadS3] ${city.name} ${countryName.name}, status ${r}`);
 
   p = null;
@@ -52,8 +54,9 @@ async function doneWithCityConfig() {
   const cityConfig = remoteConfigJson();
   const regionPlaceHolder = regionFromWeather('北京');
   let p = new Publisher(regionPlaceHolder, s3bucket);
-  const r = await p.uploadConfigJson(cityConfig);
-  logger.info(`[UploadS3] config.json , status ${r}`);
+  // const r = await p.uploadConfigJson(cityConfig);
+  const r = await p.uploadConfigProtoBuf(cityConfig);
+  logger.info(`[UploadS3] config.bytes , status ${r}`);
 
   p = null;
 }

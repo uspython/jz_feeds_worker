@@ -1,4 +1,7 @@
 const config = {
+  algorithm: '',
+  key: 'your key',
+  iv: 'you iv',
   logLevel: 'error',
   url: ' ',
   openWeatherApi: '',

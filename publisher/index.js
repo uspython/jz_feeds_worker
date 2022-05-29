@@ -6,11 +6,32 @@ const dayjs = require('dayjs');
 const pako = require('pako');
 const fs = require('fs');
 const _ = require('lodash');
+const crypto = require('crypto');
 const config = require('../worker/config');
 const Feed = require('../worker/models/feed');
 const WeatherFeed = require('../worker/models/weather_feed');
 const logger = require('../worker/logger');
 const { aliasFromRegion } = require('../worker/util/worker_helper');
+const {
+  pollenToProtoBuf, decodePollenProtoBuf, configToProtoBuf, decodeConfigProtoBuf,
+} = require('../protobuf');
+
+const { algorithm, key, iv } = config;
+
+function encrypt(data) {
+  const cipher = crypto.createCipheriv(algorithm, Buffer.from(key, 'hex'), Buffer.from(iv, 'hex'));
+  let encrypted = cipher.update(data);
+  encrypted = Buffer.concat([encrypted, cipher.final()]);
+  return { encryptedData: encrypted };
+}
+
+function decrypt(data) {
+  const { encryptedData } = data;
+  const decipher = crypto.createDecipheriv(algorithm, Buffer.from(key, 'hex'), Buffer.from(iv, 'hex'));
+  let decrypted = decipher.update(encryptedData);
+  decrypted = Buffer.concat([decrypted, decipher.final()]);
+  return decrypted;
+}
 
 const credentials = new AWS.SharedIniFileCredentials({ profile: 'default' });
 const myConfig = new AWS.Config({
@@ -79,8 +100,32 @@ class Publisher {
       .lean()
       .exec();
 
+    const pollens = [];
+    for (let index = 0; index < pollenResults.length; index += 1) {
+      const p = pollenResults[index];
+      const pollen = _.mapValues(p, (v) => {
+        if (v instanceof Date) {
+          return v.toISOString();
+        }
+        return v;
+      });
+      pollens.push(pollen);
+    }
+
+    const weathers = [];
+    for (let index = 0; index < openWeatherResults.length; index += 1) {
+      const w = openWeatherResults[index];
+      const weather = _.mapValues(w, (v) => {
+        if (v instanceof Date) {
+          return v.toISOString();
+        }
+        return v;
+      });
+      weathers.push(weather);
+    }
+
     return {
-      pollenResults, openWeatherResults,
+      pollenResults: pollens, openWeatherResults: weathers,
     };
   }
 
@@ -125,8 +170,32 @@ class Publisher {
       .lean()
       .exec();
 
+    const pollens = [];
+    for (let index = 0; index < pollenResults.length; index += 1) {
+      const p = pollenResults[index];
+      const pollen = _.mapValues(p, (v) => {
+        if (v instanceof Date) {
+          return v.toISOString();
+        }
+        return v;
+      });
+      pollens.push(pollen);
+    }
+
+    const weathers = [];
+    for (let index = 0; index < openWeatherResults.length; index += 1) {
+      const w = openWeatherResults[index];
+      const weather = _.mapValues(w, (v) => {
+        if (v instanceof Date) {
+          return v.toISOString();
+        }
+        return v;
+      });
+      weathers.push(weather);
+    }
+
     return {
-      pollenResults, openWeatherResults,
+      pollenResults: pollens, openWeatherResults: weathers,
     };
   }
 
@@ -159,6 +228,33 @@ class Publisher {
       message: '',
       data: {
         pollen_data: pollenData,
+      },
+    };
+  }
+
+  // Make Sure data key is in camelcase
+  mapToApiFromJsonV2(json) {
+    const { pollenResults = [], openWeatherResults = [] } = json;
+    const groupByRegion = _.groupBy(pollenResults, 'region.countryId');
+    const theRegion = this.region;
+
+    const pollenData = Object.keys(groupByRegion)
+      .map((countryId) => {
+        const latest = groupByRegion[countryId];
+        const [latestWeather = null] = openWeatherResults;
+
+        return {
+          latest,
+          latestWeather,
+          region: theRegion,
+        };
+      });
+
+    return {
+      success: true,
+      message: '',
+      data: {
+        pollenData,
       },
     };
   }
@@ -222,6 +318,50 @@ class Publisher {
     return 1;
   }
 
+  async uploadProtoBuf() {
+    const { pollenResults = [], openWeatherResults = [] } = await this.getRawJson();
+
+    if (pollenResults.length === 0) {
+      logger.info(`${this.region.city.name} have not content in last 7 days.`);
+      return 0;
+    }
+
+    const doc = this.mapToApiFromJsonV2({ pollenResults, openWeatherResults });
+    const buffer = await pollenToProtoBuf(doc);
+    const gziped = pako.gzip(buffer);
+    // Encrypt bytes using AES
+    const { encryptedData } = encrypt(gziped);
+
+    if (process.env.NODE_ENV === 'development') {
+      const decryptData = decrypt({ encryptedData });
+      const ungzipedData = pako.ungzip(decryptData);
+      const json = await decodePollenProtoBuf(ungzipedData);
+      console.log(`decoded = ${JSON.stringify(json)}`);
+    }
+
+    const fileName = `${this.region.alias}${config.pbFileKeyNameSurfix}`;
+
+    // call S3 to retrieve upload file to specified bucket
+    const uploadParams = {
+      Bucket: config.bucketName,
+      Key: fileName,
+      Body: encryptedData,
+      ContentType: 'application/octet-stream',
+      // Cache 1h
+      CacheControl: 'no-cache=Set-Cookie,max-age=3600',
+    };
+
+    const { ETag } = await this.s3.send(new PutObjectCommand(uploadParams));
+
+    this.s3.destroy();
+    this.s3 = null;
+
+    logger.info(`upload protobuf success: ${this.region.province.name}, ${this.region.city.name}, etag: ${ETag}`);
+    // Archive
+    // this.archiveFileFrom(bodyJsonGz);
+    return 1;
+  }
+
   async uploadMockJson() {
     const { pollenResults = [], openWeatherResults = [] } = await this.getMockRawJson();
 
@@ -272,6 +412,41 @@ class Publisher {
       ContentEncoding: 'gzip',
       // Cache 3600s
       CacheControl: 'no-cache=Set-Cookie,max-age=3600',
+    };
+
+    const { ETag } = await this.s3.send(new PutObjectCommand(uploadParams));
+
+    this.s3.destroy();
+    this.s3 = null;
+
+    logger.info(`upload config json success, etag: ${ETag}`);
+    // Archive
+    // this.archiveFileFrom(bodyJsonGz);
+    return 1;
+  }
+
+  async uploadConfigProtoBuf(configData) {
+    const fileName = 'config.bytes';
+    const doc = configData;
+    const buffer = await configToProtoBuf(doc);
+    const gziped = pako.gzip(buffer);
+    // Encrypt bytes using AES
+    const { encryptedData } = encrypt(gziped);
+
+    if (process.env.NODE_ENV === 'development') {
+      const decryptData = decrypt({ encryptedData });
+      const ungzipedData = pako.ungzip(decryptData);
+      const json = await decodeConfigProtoBuf(ungzipedData);
+      console.log(`decoded config = ${JSON.stringify(json)}`);
+    }
+
+    // call S3 to retrieve upload file to specified bucket
+    const uploadParams = {
+      Bucket: config.bucketName,
+      Key: fileName,
+      Body: encryptedData,
+      ContentType: 'application/octet-stream',
+      CacheControl: 'no-cache=Set-Cookie,max-age=3600', // Cache 1h
     };
 
     const { ETag } = await this.s3.send(new PutObjectCommand(uploadParams));
