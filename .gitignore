@@ -124,3 +124,4 @@ protobuf/pollen.prod.proto
 protobuf/config.prod.json
 protobuf/config.prod.proto
 protobuf/pollen.prod.json
+protobuf/region.proto

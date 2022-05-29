@@ -19,7 +19,7 @@ async function pollenToProtoBuf(doc) {
 async function configToProtoBuf(doc) {
   let buffer = null;
   const root = await protobuf.load(`${__dirname}/config.prod.json`);
-  const resp = root.lookupType('pollenflyer.PollenResponse');
+  const resp = root.lookupType('pollenflyer.ConfigResponse');
   buffer = resp.encode(doc).finish();
 
   if (process.env.NODE_ENV === 'development') {
@@ -43,7 +43,7 @@ async function decodePollenProtoBuf(buffer) {
 
 async function decodeConfigProtoBuf(buffer) {
   const root = await protobuf.load(`${__dirname}/config.prod.json`);
-  const resp = root.lookupType('pollenflyer.PollenResponse');
+  const resp = root.lookupType('pollenflyer.ConfigResponse');
   const decoded = resp.decode(buffer);
 
   return decoded;
