@@ -17,11 +17,14 @@ async function upload(region) {
   logger.info(`[UploadS3] start Publisher...${province.name}, ${city.name}, ${countryName || ''}`);
   let p = new Publisher(region, s3bucket);
   const jsonStatus = await p.uploadJson();
-  const pbStatus = await p.uploadProtoBuf();
-
-  logger.info(`[UploadS3] ${city.name} ${countryName.name}, status ${jsonStatus} ${pbStatus}`);
-
+  logger.info(`[UploadS3] ${city.name} ${countryName.name}, status ${jsonStatus}`);
   p = null;
+
+  let pb = new Publisher(region, s3bucket);
+  const pbStatus = await pb.uploadProtoBuf();
+  logger.info(`[UploadS3] ${city.name} ${countryName.name}, status ${pbStatus}`);
+  pb = null;
+
   return 0;
 }
 
@@ -55,10 +58,14 @@ async function doneWithCityConfig() {
   const regionPlaceHolder = regionFromWeather('北京');
   let p = new Publisher(regionPlaceHolder, s3bucket);
   const jsonStatus = await p.uploadConfigJson(cityConfig);
-  const pbStatus = await p.uploadConfigProtoBuf(cityConfig);
-  logger.info(`[UploadS3] config.bytes , status ${jsonStatus}, ${pbStatus}`);
-
+  logger.info(`[UploadS3] config.json , status ${jsonStatus}`);
   p = null;
+
+  let pb = new Publisher(regionPlaceHolder, s3bucket);
+  const pbStatus = await pb.uploadConfigProtoBuf(cityConfig);
+  logger.info(`[UploadS3] config.bytes , status , ${pbStatus}`);
+
+  pb = null;
 }
 
 (async () => {
