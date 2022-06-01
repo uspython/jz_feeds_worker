@@ -1,6 +1,6 @@
 {
   "name": "feeds-worker",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "description": "Fetch Feeds Worker",
   "main": "app.js",
   "repository": "http://zhaojianfei.com/code/feedsworker",
