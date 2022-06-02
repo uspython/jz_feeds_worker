@@ -23,7 +23,7 @@ const provinceObject = {
     'id': '140000000000',
   },
   '150000000000': {
-    'name': '内蒙古自治区',
+    'name': '内蒙古',
     'pinyin': 'innermongolia',
     'id': '150000000000',
   },
@@ -153,7 +153,7 @@ const provinceObject = {
     'id': '640000000000',
   },
   '650000000000': {
-    'name': '新疆维吾尔自治区',
+    'name': '新疆',
     'pinyin': 'xinjiang',
     'id': '650000000000',
   },

@@ -48,7 +48,7 @@ describe('Test Mock 赛罕区 Saihan Publisher', () => {
     region.weatherid = 1529102;
     const fileName = aliasFromRegion(region);
 
-    expect(region.province.name).toBe('内蒙古自治区');
+    expect(region.province.name).toBe('内蒙古');
     expect(region.city.name).toBe('呼和浩特市');
     expect(region.country.name).toBe('赛罕区');
     expect(fileName).toBe('innermongolia_hohhot_saihan');

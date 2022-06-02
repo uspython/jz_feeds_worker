@@ -111,7 +111,7 @@ describe('Test City Utility', () => {
     const region = regionFromId(e.provinceId, e.cityId, e.countryId);
     const fileName = aliasFromRegion(region);
 
-    expect(region.province.name).toBe('内蒙古自治区');
+    expect(region.province.name).toBe('内蒙古');
     expect(region.city.name).toBe('呼和浩特市');
     expect(region.country.name).toBe('赛罕区');
     expect(fileName).toBe('innermongolia_hohhot_saihan');
