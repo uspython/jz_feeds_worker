@@ -224,11 +224,22 @@ class JZFeedWorker {
       return 0;
     }
     const rawData = await this.fetchRawDataFromWeather(dateRange);
-    const feeds = this.feedsFromWeatherRaw(rawData);
+    let feeds = this.feedsFromWeatherRaw(rawData);
 
     // Guard feeds length
     if (feeds.length <= 0) {
-      return 0;
+      if (dateRange.to === WeatherDefaultDate) {
+        const d = dayjs().format(DateFormatString);
+        dateRange.to = d;
+        const newestData = await this.fetchRawDataFromWeather(dateRange);
+        feeds = this.feedsFromWeatherRaw(newestData);
+
+        if (feeds.length <= 0) {
+          return 0;
+        }
+      } else {
+        return 0;
+      }
     }
 
     let count = 0;

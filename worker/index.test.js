@@ -262,6 +262,93 @@ describe('Test City Utility', () => {
     expect(coord.lng).toBe('116.84558075595014');
   });
 
+  test('should get region with city name 石家庄', () => {
+    const {
+      province, city, country, coord,
+    } = regionFromWeather('石家庄');
+    const testCity = cityFrom('石家庄');
+    const testProvince = provinceFrom(testCity);
+
+    expect(province).not.toBeNull();
+    expect(city).not.toBeNull();
+    expect(country).not.toBeNull();
+
+    expect(country.id).toBe(testCity.id);
+    expect(city.name).toBe(testCity.name);
+    expect(city.id).toBe(testCity.id);
+    expect(province.name).toBe(testProvince.name);
+    expect(province.id).toBe(testProvince.id);
+    expect(province.name).toBe('河北省');
+    expect(coord.lat).toBe('38.052097109846855');
+    expect(coord.lng).toBe('114.46902163264978');
+  });
+
+  test('should get region with city name 武汉', () => {
+    const {
+      province, city, country, coord,
+    } = regionFromWeather('武汉');
+    const testCity = cityFrom('武汉');
+    const testProvince = provinceFrom(testCity);
+
+    expect(province).not.toBeNull();
+    expect(city).not.toBeNull();
+    expect(country).not.toBeNull();
+
+    expect(country.id).toBe(testCity.id);
+    expect(city.name).toBe(testCity.name);
+    expect(city.id).toBe(testCity.id);
+    expect(province.name).toBe(testProvince.name);
+    expect(province.id).toBe(testProvince.id);
+
+    expect(province.name).toBe('湖北省');
+    expect(coord.lat).toBe('30.598466736400987');
+    expect(coord.lng).toBe('114.31158155473231');
+  });
+
+  test('should get region with city name 伊犁', () => {
+    const {
+      province, city, country, coord,
+    } = regionFromWeather('伊犁');
+    const testCity = cityFrom('伊犁');
+    const testProvince = provinceFrom(testCity);
+
+    expect(province).not.toBeNull();
+    expect(city).not.toBeNull();
+    expect(country).not.toBeNull();
+
+    expect(country.id).toBe(testCity.id);
+    expect(city.name).toBe(testCity.name);
+    expect(city.id).toBe(testCity.id);
+    expect(province.name).toBe(testProvince.name);
+    expect(province.id).toBe(testProvince.id);
+
+    expect(province.name).toBe('新疆');
+    expect(coord.lat).toBe('43.92272313749215');
+    expect(coord.lng).toBe('81.3305377475322');
+  });
+
+  test('should get region with city name 昆明', () => {
+    const {
+      province, city, country, coord,
+    } = regionFromWeather('昆明');
+    const testCity = cityFrom('昆明');
+    const testProvince = provinceFrom(testCity);
+
+    expect(province).not.toBeNull();
+    expect(city).not.toBeNull();
+    expect(country).not.toBeNull();
+
+    expect(country.id).toBe(testCity.id);
+    expect(city.name).toBe(testCity.name);
+    expect(city.id).toBe(testCity.id);
+    expect(province.name).toBe(testProvince.name);
+    expect(province.id).toBe(testProvince.id);
+
+    expect(province.name).toBe('云南省');
+    expect(coord.lat).toBe('24.873998150044006');
+    expect(coord.lng).toBe('102.85244836500482');
+  });
+
   test('should get region with city name 西宁', () => {
     const {
       province, city, country, coord,
@@ -354,6 +441,7 @@ describe('Test JZFeedWorker', () => {
       disconnect();
     }, 500);
   });
+
   test(`should get initial date range: ${WeatherDefaultDate}/`, async () => {
     const region = regionFromWeather('肇庆');
     const w = new JZFeedWorker(region);
@@ -422,7 +510,7 @@ describe('Test JZFeedWorker', () => {
     const mockData = [{
       elenum: 1,
       week: '星期三',
-      addTime: '2020-03-11',
+      addTime: '2022-06-11',
       city: '北京',
       level: '偏高',
       cityCode: 'beijing',
@@ -442,7 +530,7 @@ describe('Test JZFeedWorker', () => {
     }] = feeds;
 
     expect(cityId).toBe(testRegion.city.id);
-    expect(releaseDate).toBe(dayjs('2020-03-11').startOf('day').add(8, 'hours').valueOf());
+    expect(releaseDate).toBe(dayjs('2022-06-11').startOf('day').add(8, 'hours').valueOf());
     expect(region.provinceId).toBe(testRegion.province.id);
     expect(pollenCount).toBe('202');
   });

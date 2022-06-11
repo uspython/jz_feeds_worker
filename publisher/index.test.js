@@ -43,31 +43,31 @@ describe('Test Mock 赛罕区 Saihan Publisher', () => {
     expect(() => addOneFeed(testFeed)).not.toThrow(Error);
   });
 
-  test('should get saihan mock json', async () => {
-    const region = regionFromId(e.provinceId, e.cityId, e.countryId);
-    region.weatherid = 1529102;
-    const fileName = aliasFromRegion(region);
+  // test('should get saihan mock json', async () => {
+  //   const region = regionFromId(e.provinceId, e.cityId, e.countryId);
+  //   region.weatherid = 1529102;
+  //   const fileName = aliasFromRegion(region);
 
-    expect(region.province.name).toBe('内蒙古');
-    expect(region.city.name).toBe('呼和浩特市');
-    expect(region.country.name).toBe('赛罕区');
-    expect(fileName).toBe('innermongolia_hohhot_saihan');
+  //   expect(region.province.name).toBe('内蒙古');
+  //   expect(region.city.name).toBe('呼和浩特市');
+  //   expect(region.country.name).toBe('赛罕区');
+  //   expect(fileName).toBe('innermongolia_hohhot_saihan');
 
-    expect(region.coord.lat).toBe(e.lat);
-    expect(region.coord.lng).toBe(e.lng);
+  //   expect(region.coord.lat).toBe(e.lat);
+  //   expect(region.coord.lng).toBe(e.lng);
 
-    const p = new Publisher(region, testBucket);
-    const { pollenResults = [], openWeatherResults = [] } = await p.getMockRawJson();
+  //   const p = new Publisher(region, testBucket);
+  //   const { pollenResults = [], openWeatherResults = [] } = await p.getMockRawJson();
 
-    expect(pollenResults.length).not.toBe(0);
-    expect(openWeatherResults.length).not.toBe(0);
+  //   expect(pollenResults.length).not.toBe(0);
+  //   expect(openWeatherResults.length).not.toBe(0);
 
-    const [pollen] = pollenResults;
-    const [w] = openWeatherResults;
+  //   const [pollen] = pollenResults;
+  //   const [w] = openWeatherResults;
 
-    expect(pollen.region.countryId).toBe(region.country.id);
-    expect(w.id).toBe(region.weatherid);
-  });
+  //   expect(pollen.region.countryId).toBe(region.country.id);
+  //   expect(w.id).toBe(region.weatherid);
+  // });
 });
 
 describe('Test AWS Publisher 包头', () => {
@@ -98,27 +98,45 @@ describe('Test AWS Publisher 包头', () => {
     expect(openWeatherResults.length).not.toBe(0);
   });
 
-  test("should upload city's json file to s3 with gzip", async () => {
-    const run = async () => {
-      const status = await publisher.uploadMockJson();
-      expect(status).not.toBe(0);
-    };
+  // test("should upload city's json file to s3 with gzip", async () => {
+  //   const run = async () => {
+  //     const status = await publisher.uploadMockJson();
+  //     expect(status).not.toBe(0);
+  //   };
 
-    let err = null;
-    try {
-      await run();
-    } catch (error) {
-      err = error;
-    }
+  //   let err = null;
+  //   try {
+  //     await run();
+  //   } catch (error) {
+  //     err = error;
+  //   }
 
-    expect(err).toBeNull();
-  });
+  //   expect(err).toBeNull();
+  // });
 
-  test("should upload city's config json file to s3", async () => {
+  // test("should upload city's config json file to s3", async () => {
+  //   const run = async () => {
+  //     const p = new Publisher(theRegion, testBucket);
+  //     const cityConfig = remoteConfigJson();
+  //     const status = await p.uploadConfigJson(cityConfig);
+  //     expect(status).not.toBe(0);
+  //   };
+
+  //   let err = null;
+  //   try {
+  //     await run();
+  //   } catch (error) {
+  //     err = error;
+  //   }
+
+  //   expect(err).toBeNull();
+  // });
+
+  test("should upload city's config protobuf file to s3", async () => {
     const run = async () => {
       const p = new Publisher(theRegion, testBucket);
       const cityConfig = remoteConfigJson();
-      const status = await p.uploadConfigJson(cityConfig);
+      const status = await p.uploadConfigProtoBuf(cityConfig);
       expect(status).not.toBe(0);
     };
 
@@ -154,34 +172,34 @@ describe('Test AWS Publisher 沧州', () => {
     expect(b.length).not.toBe(0);
   });
 
-  test('should get pollen json in latest 7 days', async () => {
-    const { pollenResults = [], openWeatherResults = [] } = await publisher.getMockRawJson();
+  // test('should get pollen json in latest 7 days', async () => {
+  //   const { pollenResults = [], openWeatherResults = [] } = await publisher.getMockRawJson();
 
-    expect(pollenResults.length).not.toBe(0);
-    expect(openWeatherResults.length).not.toBe(0);
-  });
+  //   expect(pollenResults.length).not.toBe(0);
+  //   expect(openWeatherResults.length).not.toBe(0);
+  // });
 
-  test("should upload city's json file to s3 with gzip", async () => {
-    const run = async () => {
-      const status = await publisher.uploadMockJson();
-      expect(status).not.toBe(0);
-    };
+  // test("should upload city's json file to s3 with gzip", async () => {
+  //   const run = async () => {
+  //     const status = await publisher.uploadMockJson();
+  //     expect(status).not.toBe(0);
+  //   };
 
-    let err = null;
-    try {
-      await run();
-    } catch (error) {
-      err = error;
-    }
+  //   let err = null;
+  //   try {
+  //     await run();
+  //   } catch (error) {
+  //     err = error;
+  //   }
 
-    expect(err).toBeNull();
-  });
+  //   expect(err).toBeNull();
+  // });
 
   test("should upload city's config json file to s3", async () => {
     const run = async () => {
       const p = new Publisher(theRegion, testBucket);
       const cityConfig = remoteConfigJson();
-      const status = await p.uploadConfigJson(cityConfig);
+      const status = await p.uploadConfigProtoBuf(cityConfig);
       expect(status).not.toBe(0);
     };
 
