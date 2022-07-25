@@ -263,6 +263,33 @@ function callbackFromWeather(resp) {
 
 // For weather api only
 // eslint-disable-next-line max-len
+// https://miniflux.app/docs/api.html#endpoint-get-feed-entries
+// eslint-disable-next-line max-len
+// return {"elenum":1,"week":"星期日","addTime":"2022-03-01","city":"","level":"","cityCode":"","num":"","eletype":"花粉","content":""}
+function callbackFromMinifluxApi(resp, regex) {
+  let jsonStr = { };
+
+  const m = regex.exec(resp);
+
+  if (m !== null) {
+    [jsonStr] = m;
+  } else {
+    logger.info(resp);
+    throw new Error('Can not parse weather resp to JSON, match failure');
+  }
+
+  try {
+    const ret = JSON.parse(jsonStr);
+    return ret;
+  } catch (err) {
+    logger.error({ err });
+  }
+
+  return null;
+}
+
+// For weather api only
+// eslint-disable-next-line max-len
 // resp:[{
 //    "skDate" :"2021-04-02",
 //    "skSouth" :"68",
@@ -313,5 +340,6 @@ module.exports.regionFromWeather = regionFromWeather;
 module.exports.regionFromId = regionFromId;
 module.exports.remoteConfigJson = remoteConfigJson;
 module.exports.callbackFromWeather = callbackFromWeather;
+module.exports.callbackFromMinifluxApi = callbackFromMinifluxApi;
 module.exports.callbackHuhehaote = callbackHuhehaote;
 module.exports.aliasFromRegion = aliasFromRegion;
