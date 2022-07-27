@@ -11,9 +11,9 @@ const {
 } = require('../util/dbhelper');
 
 const {
-  getCityCodeWith,
   WeatherDefaultDate,
-  regionFromId,
+  callbackFromMinifluxApi,
+  getRssFeedConfig,
 } = require('../util/worker_helper');
 
 dayjs.extend(utc);
@@ -114,36 +114,57 @@ class JZMiniFluxWorker {
 
   async fetchRawDataFromMinifluxApi(params) {
     // const url = `${config.weatherUrl}`;
-    const { from = '', to = '' } = params;
+    const { from, to } = params;
 
     const { province, city, country } = this.region;
-    const cityCode = getCityCodeWith(province.name + city.name + country.name);
-    const { rssFeedsId = 0, contentType = 'text', regex = '' } = getRssFeedConfig();
+    const {
+      feedId, feedName, contentType = 'text', regex,
+    } = getRssFeedConfig(province.name + city.name + country.name);
 
-    if (!cityCode || cityCode.length === 0) {
+    if (!feedName || feedName.length === 0) {
       throw new Error('City Code can not be Empty');
     }
 
     const weatherParams = {
       order: 'id',
       direction: 'desc',
-      after: 1658419200,
     };
 
-    const apiUrl = `http://172.25.0.6:8080/v1/feeds/${rssFeedsId}/entries`;
+    if (from) {
+      weatherParams.after = from;
+    }
+
+    if (to) {
+      weatherParams.before = to;
+    }
+
+    const apiUrl = `http://172.25.0.6:8080/v1/feeds/${feedId}/entries`;
+
+    let header = {};
+    if (process.env.NODE_ENV === 'development') {
+      header = { 'X-Auth-Token': `${process.env.ME_API_TOKEN_DEV}=` };
+    } else {
+      header = { 'X-Auth-Token': `${process.env.ME_API_TOKEN_PROD}=` };
+    }
+
     try {
       const { status, statusText, data } = await fetch(
         'GET',
         apiUrl,
         null,
         weatherParams,
+        header,
       );
 
+      console.log(`weatherParams ${JSON.stringify(weatherParams)}`);
       if (status === 200 || statusText === 'OK') {
-        // eslint-disable-next-line max-len
-        // callback({"dataList":[{"elenum":1,"week":"星期日","addTime":"2022-03-01","city":"","level":"","cityCode":"beijing","num":"","eletype":"花粉","content":""}]})
-        const { dataList } = callbackFromWeather(data);
-        return dataList || [];
+        if (contentType === 'text') {
+          // eslint-disable-next-line max-len
+          // [{"addTime":"2022-03-01","num":""}]
+          const ret = callbackFromMinifluxApi(data, regex);
+          return ret || [];
+        }
+        return [];
       }
     } catch (error) {
       logger.error({ err: error });
@@ -213,9 +234,7 @@ class JZMiniFluxWorker {
   }
 
   async invoke() {
-    const dateRangePromise = this.scheduleType === 'month'
-      ? this.getMonthRange()
-      : this.getNextDayRange();
+    const dateRangePromise = this.getNextDayRange();
     const dateRange = await dateRangePromise;
 
     logger.info(`[Worker]: DateRange: ${dateRange.from} ${dateRange.to}`);
@@ -225,27 +244,32 @@ class JZMiniFluxWorker {
       logger.info('[Worker]: Wrong DateRange');
       return 0;
     }
-    const rawData = await this.fetchRawDataFromMinifluxApi(dateRange);
-    let feeds = this.feedsFromRssApiRaw(rawData);
+
+    const nextDay = dateRange;
+    const isInitialized = (nextDay.from === WeatherDefaultDate
+      && nextDay.to === WeatherDefaultDate);
+    let from = null;
+    if (isInitialized) {
+      // Nothing
+      // get all entris from feed
+    } else {
+      from = dayjs(dateRange.from)
+        .utc()
+        .startOf('day')
+        .unix();
+    }
+
+    const rawData = await this.fetchRawDataFromMinifluxApi({ from });
+
+    const feeds = this.feedsFromRssApiRaw(rawData);
 
     // Guard feeds length
     if (feeds.length <= 0) {
-      if (dateRange.to === WeatherDefaultDate) {
-        const d = dayjs().format(DateFormatString);
-        dateRange.to = d;
-        const newestData = await this.fetchRawDataFromMinifluxApi(dateRange);
-        feeds = this.feedsFromRssApiRaw(newestData);
-
-        if (feeds.length <= 0) {
-          return 0;
-        }
-      } else {
-        return 0;
-      }
+      return 0;
     }
 
     let count = 0;
-    if (this.scheduleType === 'day') {
+    if (!isInitialized) {
       for (let idx = 0; idx < feeds.length; idx += 1) {
         const feed = feeds[idx];
 

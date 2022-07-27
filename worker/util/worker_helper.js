@@ -1,3 +1,4 @@
+/* eslint-disable no-cond-assign */
 const { cityMap } = require('../assets/city');
 const { countryMap } = require('../assets/county');
 const { provinceObject } = require('../assets/province_object');
@@ -112,6 +113,10 @@ function provinceFrom(city) {
 // }
 
 function coordinateFrom(provinceName, cityName, countryName) {
+  let countryArea = countryName;
+  if (countryName === '市辖区') {
+    countryArea = '';
+  }
   /**
    * {
         "area": "",
@@ -126,7 +131,7 @@ function coordinateFrom(provinceName, cityName, countryName) {
     .find(({ province, city, area }) => {
       const ret = province.indexOf(provinceName) > -1
         && city.indexOf(cityName) > -1
-        && area.indexOf(countryName) > -1;
+        && area.indexOf(countryArea) > -1;
       return ret;
     });
   return { lat, lng };
@@ -214,8 +219,11 @@ function remoteConfigJson() {
     .map(({ cn }) => regionFromWeather(cn));
   const apiRegions = config.uploadCities
     .map(({ provinceId, cityId, countryId }) => regionFromId(provinceId, cityId, countryId));
+  const rssRegions = config.rssCities
+    // eslint-disable-next-line max-len
+    .map(({ region: { provinceId, cityId, countryId } }) => regionFromId(provinceId, cityId, countryId));
 
-  const regions = weatherRegions.concat(apiRegions);
+  const regions = weatherRegions.concat(apiRegions).concat(rssRegions);
   return {
     success: true,
     message: '',
@@ -263,29 +271,43 @@ function callbackFromWeather(resp) {
 
 // For weather api only
 // eslint-disable-next-line max-len
-// https://miniflux.app/docs/api.html#endpoint-get-feed-entries
+// resp: https://miniflux.app/docs/api.html#endpoint-get-feed-entries
 // eslint-disable-next-line max-len
-// return {"elenum":1,"week":"星期日","addTime":"2022-03-01","city":"","level":"","cityCode":"","num":"","eletype":"花粉","content":""}
+// return [{"addTime":"2022-03-01","num":""}]
 function callbackFromMinifluxApi(resp, regex) {
-  let jsonStr = { };
+  let feedTitle = '';
+  const ret = [];
 
-  const m = regex.exec(resp);
+  const { total = 0, entries = [] } = resp;
 
-  if (m !== null) {
-    [jsonStr] = m;
-  } else {
-    logger.info(resp);
-    throw new Error('Can not parse weather resp to JSON, match failure');
+  if (total === 0) {
+    throw new Error('no entries found');
   }
 
-  try {
-    const ret = JSON.parse(jsonStr);
-    return ret;
-  } catch (err) {
-    logger.error({ err });
-  }
+  for (let idx = 0; idx < entries.length; idx += 1) {
+    const { content = '', published_at: publishedAt, feed: { title: theFeedTitle } } = entries[idx];
+    feedTitle = theFeedTitle;
+    const item = {};
+    let m;
+    while ((m = regex.exec(content)) !== null) {
+      // This is necessary to avoid infinite loops with zero-width matches
+      if (m.index === regex.lastIndex) {
+        // eslint-disable-next-line no-param-reassign
+        regex.lastIndex += 1;
+      }
 
-  return null;
+      // The result can be accessed through the `m`-variable.
+      m.forEach((match, groupIndex) => {
+        if (groupIndex === 1) {
+          item.num = match;
+          item.addTime = publishedAt;
+          ret.push(item);
+        }
+      });
+    }
+  }
+  console.log(`FeedTitle: ${feedTitle}, ${ret.length} matched.`);
+  return ret;
 }
 
 // For weather api only
@@ -327,6 +349,17 @@ function randomizeArray(original) {
   return ret;
 }
 
+function getRssFeedConfig(cnName) {
+  for (let idx = 0; idx < config.rssCities.length; idx += 1) {
+    const city = config.rssCities[idx];
+    if (cnName.indexOf(city.feedName) > -1) {
+      return city;
+    }
+  }
+
+  return null;
+}
+
 module.exports.cityFrom = cityFrom;
 module.exports.callWithRetry = callWithRetry;
 module.exports.WeatherDefaultDate = WeatherDefaultDate;
@@ -343,3 +376,4 @@ module.exports.callbackFromWeather = callbackFromWeather;
 module.exports.callbackFromMinifluxApi = callbackFromMinifluxApi;
 module.exports.callbackHuhehaote = callbackHuhehaote;
 module.exports.aliasFromRegion = aliasFromRegion;
+module.exports.getRssFeedConfig = getRssFeedConfig;

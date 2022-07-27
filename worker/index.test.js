@@ -7,6 +7,7 @@ const {
 const {
   cityFrom,
   callbackFromWeather,
+  callbackFromMinifluxApi,
   provinceFrom,
   WeatherDefaultDate,
   randomizeArray,
@@ -17,10 +18,12 @@ const {
   regionFromId,
   remoteConfigJson,
   aliasFromRegion,
+  getRssFeedConfig,
 } = require('./util/worker_helper');
 const config = require('./config');
 
 const JZFeedWorker = require('./index');
+const JZMiniFluxWorker = require('./miniflux/index');
 
 describe('Test City Utility', () => {
   test('should randomize the Array', () => {
@@ -544,5 +547,49 @@ describe('Test JZFeedWorker', () => {
 
     const { dataList } = r;
     expect(dataList.length).not.toBe(0);
+  });
+
+  test('should get a datalist object with RSS regex', () => {
+    const resp = {"total":15,"entries":[{"id":10,"user_id":1,"feed_id":1,"status":"read","hash":"2922b6ecae6604b1532f6f261e9248f516ec657b14ef6771a209e5f418a7e8d3","title":"【榆林花粉浓度日报】7月21日","url":"http://www.test.me/t/tqHIwT7YKd","comments_url":"","published_at":"2022-07-21T11:02:00Z","created_at":"2022-07-25T07:18:18.667335Z","content":"间：7月21日</p><p>花粉数量：（35粒/千平方毫米）</p><p>f3baa3de8829f031727962744&amp;chksm=97165725a061de33f72ffb92f3734194c9d6b65002ee581b02c36e8f0b4be74087f869dd59c3#rd\" rel=\"noopener noreferrer\" target=\"_blank\" referrerpolicy=\"no-referrer\">文章原文</a>\n        <br>\n    \n\n    \n\n    <img alt=\"\" src=\"http://www.d\" loading=\"lazy\">\n\n","author":"test.me (test.me)","share_code":"","starred":false,"reading_time":3,"enclosures":null,"feed":{"id":1,"user_id":1,"feed_url":"http://www.test.me/rss/GI2TCNZVG56DONZSHE4GMNBWGM3TQZBWMRTDONDBGMYGEZRWGFRGIYRWGA3TQNTGMI4WMMJSMZRQ====","site_url":"http://www.test.me/column/63hPuA1SIU","title":"test.me - test.me啥","checked_at":"2022-07-27T01:58:18.092146Z","next_check_at":"0001-01-01T00:00:00Z","etag_header":"","last_modified_header":"","parsing_error_message":"","parsing_error_count":0,"scraper_rules":"","rewrite_rules":"","crawler":false,"blocklist_rules":"","keeplist_rules":"","user_agent":"","username":"","password":"","disabled":false,"ignore_http_cache":false,"allow_self_signed_certificates":false,"fetch_via_proxy":false,"category":{"id":1,"title":"All","user_id":1},"icon":{"feed_id":1,"icon_id":1}}}]};
+    const { rssCities: [{ regex }] } = config;
+    const r = callbackFromMinifluxApi(resp, regex);
+    expect(r).not.toBeNull();
+    expect(r.length).not.toBe(0);
+  });
+
+  test('should get RSS Config City', () => {
+    const city = getRssFeedConfig('陕西省榆林市');
+    const { feedName } = city;
+    expect(city).not.toBeNull();
+    expect(feedName).toBe('榆林');
+  });
+
+  test('fetch miniflux api should return raw data', async () => {
+    const testCity = regionFromWeather('榆林');
+    const w = new JZMiniFluxWorker(testCity);
+    const rawData = await w.fetchRawDataFromMinifluxApi({ from: null, to: null });
+
+    expect(rawData.length).not.toBe(0);
+  });
+
+  test('fetch miniflux api should return today raw data', async () => {
+    const testCity = regionFromWeather('榆林');
+    const w = new JZMiniFluxWorker(testCity);
+    const nextDay = await w.getNextDayRange();
+
+    let from = null;
+    if (nextDay.from === WeatherDefaultDate && nextDay.to === WeatherDefaultDate) {
+      // Nothing
+    } else {
+      from = dayjs()
+        .utc()
+        .startOf('day')
+        .add(-1, 'day')
+        .unix();
+    }
+
+    const rawData = await w.fetchRawDataFromMinifluxApi({ from });
+
+    expect(rawData.length).toBeGreaterThanOrEqual(1);
   });
 });
