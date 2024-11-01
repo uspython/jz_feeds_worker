@@ -199,6 +199,110 @@ class Publisher {
     };
   }
 
+  // get the latest 7 days data field
+  // add the latest 1 months data field
+  async getRawJsonV2() {
+    const regionParams = this.region.country.id === this.region.city.id
+      ? {}
+      : { 'region.countryId': this.region.country.id };
+
+    const latest7DaysPollenResults = await Feed.find(
+      {
+        cityId: this.region.city.id,
+        releaseDate: { $gte: dayjs().add(-6, 'day').startOf('day').add(8, 'hours') },
+        ...regionParams,
+      },
+      null,
+      { sort: { releaseDate: -1 } },
+    )
+      .select({
+        __v: 0,
+        _id: 0,
+        createdAt: 0,
+        cityId: 0,
+        pollenCount: 0,
+      })
+      .lean()
+      .exec();
+
+      const latestMonthPollenResults = await Feed.find(
+        {
+          cityId: this.region.city.id,
+          releaseDate: { $gte: dayjs().add(-1, 'month').startOf('day').add(8, 'hours') },
+          ...regionParams,
+        },
+        null,
+        { sort: { releaseDate: 1 } },
+      )
+        .select({
+          __v: 0,
+          _id: 0,
+          createdAt: 0,
+          cityId: 0,
+          pollenCount: 0,
+        })
+        .lean()
+        .exec();
+
+    const openWeatherResults = await WeatherFeed
+      .find({
+        id: this.region.weatherid,
+        dt: { $gte: dayjs().add(-12, 'hours').unix() },
+      }, null, {
+        sort: { dt: -1 },
+      })
+      .select({
+        __v: 0,
+        _id: 0,
+        createdAt: 0,
+        updateAt: 0,
+      })
+      .lean()
+      .exec();
+
+    const latest7DaysPollens = [];
+    for (let index = 0; index < latest7DaysPollenResults.length; index += 1) {
+      const p = latest7DaysPollenResults[index];
+      const pollen = _.mapValues(p, (v) => {
+        if (v instanceof Date) {
+          return v.toISOString();
+        }
+        return v;
+      });
+      latest7DaysPollens.push(pollen);
+    }
+
+    const latestMonthPollens = [];
+    for (let index = 0; index < latestMonthPollenResults.length; index += 1) {
+      const p = latestMonthPollenResults[index];
+      const pollen = _.mapValues(p, (v) => {
+        if (v instanceof Date) {
+          return v.toISOString();
+        }
+        return v;
+      });
+      latestMonthPollens.push(pollen);
+    }
+
+    const weathers = [];
+    for (let index = 0; index < openWeatherResults.length; index += 1) {
+      const w = openWeatherResults[index];
+      const weather = _.mapValues(w, (v) => {
+        if (v instanceof Date) {
+          return v.toISOString();
+        }
+        return v;
+      });
+      weathers.push(weather);
+    }
+
+    return {
+      pollenResults: latest7DaysPollens, 
+      openWeatherResults: weathers,
+      latestMonthPollenResults: latestMonthPollens,
+    };
+  }
+
   /**
 * format to:
 * {
