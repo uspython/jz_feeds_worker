@@ -40,6 +40,14 @@ const myConfig = new AWS.Config({
 });
 AWS.config.update(myConfig);
 
+const ExcludeFields = {
+  __v: 0,
+  _id: 0,
+  createdAt: 0,
+  cityId: 0,
+  pollenCount: 0,
+};
+
 class Publisher {
   /**
    * @param {aRegion} Region Object
@@ -60,37 +68,64 @@ class Publisher {
     return Buckets;
   }
 
-  async getRawJson() {
-    const regionParams = this.region.country.id === this.region.city.id
-      ? {}
-      : { 'region.countryId': this.region.country.id };
-
-    const pollenResults = await Feed.find(
+  // Helper methods for data fetching
+  async fetchLatest7DaysData(regionParams) {
+    return Feed.find(
       {
         cityId: this.region.city.id,
         releaseDate: { $gte: dayjs().add(-6, 'day').startOf('day').add(8, 'hours') },
         ...regionParams,
       },
       null,
-      { sort: { releaseDate: -1 } },
+      { sort: { releaseDate: -1 } }
     )
-      .select({
-        __v: 0,
-        _id: 0,
-        createdAt: 0,
-        cityId: 0,
-        pollenCount: 0,
-      })
+      .select(ExcludeFields)
       .lean()
       .exec();
+  }
 
-    const openWeatherResults = await WeatherFeed
-      .find({
+  async fetchLastMonthData(regionParams) {
+    return Feed.find(
+      {
+        cityId: this.region.city.id,
+        releaseDate: { $gte: dayjs().add(-1, 'month').startOf('day').add(8, 'hours') },
+        ...regionParams,
+      },
+      null,
+      { sort: { releaseDate: 1 } }
+    )
+      .select(ExcludeFields)
+      .lean()
+      .exec();
+  }
+
+  async fetchOneYearAgoData(regionParams) {
+    return Feed.find(
+      {
+        cityId: this.region.city.id,
+        releaseDate: {
+          $gte: dayjs().subtract(1, 'year').subtract(1, 'month').startOf('day').add(8, 'hours'),
+          $lte: dayjs().subtract(1, 'year').startOf('day').add(8, 'hours')
+        },
+        ...regionParams,
+      },
+      null,
+      { sort: { releaseDate: 1 } }
+    )
+      .select(ExcludeFields)
+      .lean()
+      .exec();
+  }
+
+  async fetchWeatherData() {
+    return WeatherFeed.find(
+      {
         id: this.region.weatherid,
         dt: { $gte: dayjs().add(-12, 'hours').unix() },
-      }, null, {
-        sort: { dt: -1 },
-      })
+      },
+      null,
+      { sort: { dt: -1 } }
+    )
       .select({
         __v: 0,
         _id: 0,
@@ -99,103 +134,30 @@ class Publisher {
       })
       .lean()
       .exec();
-
-    const pollens = [];
-    for (let index = 0; index < pollenResults.length; index += 1) {
-      const p = pollenResults[index];
-      const pollen = _.mapValues(p, (v) => {
-        if (v instanceof Date) {
-          return v.toISOString();
-        }
-        return v;
-      });
-      pollens.push(pollen);
-    }
-
-    const weathers = [];
-    for (let index = 0; index < openWeatherResults.length; index += 1) {
-      const w = openWeatherResults[index];
-      const weather = _.mapValues(w, (v) => {
-        if (v instanceof Date) {
-          return v.toISOString();
-        }
-        return v;
-      });
-      weathers.push(weather);
-    }
-
-    return {
-      pollenResults: pollens, openWeatherResults: weathers,
-    };
   }
 
-  async getMockRawJson() {
+  // Helper method for processing data
+  processDateValues(results) {
+    return results.map(item => 
+      _.mapValues(item, v => v instanceof Date ? v.toISOString() : v)
+    );
+  }
+
+  async getRawJson() {
     const regionParams = this.region.country.id === this.region.city.id
       ? {}
       : { 'region.countryId': this.region.country.id };
 
-    const pollenResults = await Feed.find(
-      {
-        cityId: this.region.city.id,
-        createdAt: { $gte: dayjs().add(-1, 'month').startOf('day').add(8, 'hours') },
-        ...regionParams,
-      },
-      null,
-      { sort: { releaseDate: -1 } },
-    )
-      .select({
-        __v: 0,
-        _id: 0,
-        createdAt: 0,
-        cityId: 0,
-        pollenCount: 0,
-      })
-      .limit(10)
-      .lean()
-      .exec();
+    // Fetch all data in parallel
+    const [pollenResults, openWeatherResults] = await Promise.all([
+      this.fetchLatest7DaysData(regionParams),
+      this.fetchWeatherData()
+    ]);
 
-    const openWeatherResults = await WeatherFeed
-      .find({
-        id: this.region.weatherid,
-        dt: { $gte: dayjs().add(-12, 'hours').unix() },
-      }, null, {
-        sort: { dt: -1 },
-      })
-      .select({
-        __v: 0,
-        _id: 0,
-        createdAt: 0,
-        updateAt: 0,
-      })
-      .lean()
-      .exec();
-
-    const pollens = [];
-    for (let index = 0; index < pollenResults.length; index += 1) {
-      const p = pollenResults[index];
-      const pollen = _.mapValues(p, (v) => {
-        if (v instanceof Date) {
-          return v.toISOString();
-        }
-        return v;
-      });
-      pollens.push(pollen);
-    }
-
-    const weathers = [];
-    for (let index = 0; index < openWeatherResults.length; index += 1) {
-      const w = openWeatherResults[index];
-      const weather = _.mapValues(w, (v) => {
-        if (v instanceof Date) {
-          return v.toISOString();
-        }
-        return v;
-      });
-      weathers.push(weather);
-    }
-
+    // Process results using the shared helper method
     return {
-      pollenResults: pollens, openWeatherResults: weathers,
+      pollenResults: this.processDateValues(pollenResults),
+      openWeatherResults: this.processDateValues(openWeatherResults)
     };
   }
 
@@ -206,100 +168,60 @@ class Publisher {
       ? {}
       : { 'region.countryId': this.region.country.id };
 
-    const latest7DaysPollenResults = await Feed.find(
-      {
-        cityId: this.region.city.id,
-        releaseDate: { $gte: dayjs().add(-6, 'day').startOf('day').add(8, 'hours') },
-        ...regionParams,
-      },
-      null,
-      { sort: { releaseDate: -1 } },
-    )
-      .select({
-        __v: 0,
-        _id: 0,
-        createdAt: 0,
-        cityId: 0,
-        pollenCount: 0,
-      })
-      .lean()
-      .exec();
+    // Fetch all data in parallel
+    const [
+      latest7DaysPollenResults,
+      latestMonthPollenResults,
+      oneYearAgoFromTodayPollenResults,
+      openWeatherResults
+    ] = await Promise.all([
+      this.fetchLatest7DaysData(regionParams),
+      this.fetchLastMonthData(regionParams),
+      this.fetchOneYearAgoData(regionParams),
+      this.fetchWeatherData()
+    ]);
 
-      const latestMonthPollenResults = await Feed.find(
+    // Process all results
+    return {
+      pollenResults: this.processDateValues(latest7DaysPollenResults),
+      openWeatherResults: this.processDateValues(openWeatherResults),
+      latestMonthPollenResults: this.processDateValues(latestMonthPollenResults),
+      oneYearAgoFromTodayPollenResults: this.processDateValues(oneYearAgoFromTodayPollenResults),
+    };
+  }
+
+  async getMockRawJson() {
+    const regionParams = this.region.country.id === this.region.city.id
+      ? {}
+      : { 'region.countryId': this.region.country.id };
+
+    // Add a new helper method for mock data fetching
+    async function fetchMockPollenData() {
+      return Feed.find(
         {
           cityId: this.region.city.id,
-          releaseDate: { $gte: dayjs().add(-1, 'month').startOf('day').add(8, 'hours') },
+          createdAt: { $gte: dayjs().add(-1, 'month').startOf('day').add(8, 'hours') },
           ...regionParams,
         },
         null,
-        { sort: { releaseDate: 1 } },
+        { sort: { releaseDate: -1 } }
       )
-        .select({
-          __v: 0,
-          _id: 0,
-          createdAt: 0,
-          cityId: 0,
-          pollenCount: 0,
-        })
+        .select(ExcludeFields)
+        .limit(10)
         .lean()
         .exec();
-
-    const openWeatherResults = await WeatherFeed
-      .find({
-        id: this.region.weatherid,
-        dt: { $gte: dayjs().add(-12, 'hours').unix() },
-      }, null, {
-        sort: { dt: -1 },
-      })
-      .select({
-        __v: 0,
-        _id: 0,
-        createdAt: 0,
-        updateAt: 0,
-      })
-      .lean()
-      .exec();
-
-    const latest7DaysPollens = [];
-    for (let index = 0; index < latest7DaysPollenResults.length; index += 1) {
-      const p = latest7DaysPollenResults[index];
-      const pollen = _.mapValues(p, (v) => {
-        if (v instanceof Date) {
-          return v.toISOString();
-        }
-        return v;
-      });
-      latest7DaysPollens.push(pollen);
     }
 
-    const latestMonthPollens = [];
-    for (let index = 0; index < latestMonthPollenResults.length; index += 1) {
-      const p = latestMonthPollenResults[index];
-      const pollen = _.mapValues(p, (v) => {
-        if (v instanceof Date) {
-          return v.toISOString();
-        }
-        return v;
-      });
-      latestMonthPollens.push(pollen);
-    }
+    // Fetch all data in parallel
+    const [pollenResults, openWeatherResults] = await Promise.all([
+      fetchMockPollenData.call(this),
+      this.fetchWeatherData()
+    ]);
 
-    const weathers = [];
-    for (let index = 0; index < openWeatherResults.length; index += 1) {
-      const w = openWeatherResults[index];
-      const weather = _.mapValues(w, (v) => {
-        if (v instanceof Date) {
-          return v.toISOString();
-        }
-        return v;
-      });
-      weathers.push(weather);
-    }
-
+    // Process results using the shared helper method
     return {
-      pollenResults: latest7DaysPollens, 
-      openWeatherResults: weathers,
-      latestMonthPollenResults: latestMonthPollens,
+      pollenResults: this.processDateValues(pollenResults),
+      openWeatherResults: this.processDateValues(openWeatherResults)
     };
   }
 
@@ -338,19 +260,32 @@ class Publisher {
 
   // Make Sure data key is in camelcase
   mapToApiFromJsonV2(json) {
-    const { pollenResults = [], openWeatherResults = [] } = json;
+    const { 
+      pollenResults = [], 
+      openWeatherResults = [], 
+      latestMonthPollenResults = [], 
+      oneYearAgoFromTodayPollenResults = [] 
+    } = json;
     const groupByRegion = _.groupBy(pollenResults, 'region.countryId');
+    const latestMonthGroupByRegion = _.groupBy(latestMonthPollenResults, 'region.countryId');
+    const oneYearAgoFromTodayGroupByRegion = _.groupBy(oneYearAgoFromTodayPollenResults, 'region.countryId');
     const theRegion = this.region;
 
     const pollenData = Object.keys(groupByRegion)
       .map((countryId) => {
         const latest = groupByRegion[countryId];
+        const latest1Month = latestMonthGroupByRegion[countryId];
+        const oneYearAgoFromToday = oneYearAgoFromTodayGroupByRegion[countryId];
         const [latestWeather = null] = openWeatherResults;
 
         return {
           latest,
           latestWeather,
           region: theRegion,
+          history: {
+            lastMonth: latest1Month,
+            oneYearAgo: oneYearAgoFromToday,
+          }
         };
       });
 
@@ -423,14 +358,14 @@ class Publisher {
   }
 
   async uploadProtoBuf() {
-    const { pollenResults = [], openWeatherResults = [] } = await this.getRawJson();
+    const { pollenResults = [], openWeatherResults = [], latestMonthPollenResults = [] } = await this.getRawJsonV2();
 
     if (pollenResults.length === 0) {
       logger.info(`${this.region.city.name} have not content in last 7 days.`);
       return 0;
     }
 
-    const doc = this.mapToApiFromJsonV2({ pollenResults, openWeatherResults });
+    const doc = this.mapToApiFromJsonV2({ pollenResults, openWeatherResults, latestMonthPollenResults });
     const buffer = await pollenToProtoBuf(doc);
     const gziped = pako.gzip(buffer);
     // Encrypt bytes using AES
